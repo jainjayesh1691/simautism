@@ -50,9 +50,7 @@ node_modules/
 .env
 .env.*
 !.env.example
-
 # Supabase temporary files
 supabase/.temp/
-
 # Logs
 *.log
