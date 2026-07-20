@@ -51,6 +51,21 @@ export default function AdminDashboard() {
   const [accountMessage, setAccountMessage] = useState({ text: '', type: '' });
   const [accountActionLoading, setAccountActionLoading] = useState(false);
 
+  // Edit User Profile Modal States
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editFullName, setEditFullName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editRole, setEditRole] = useState('user');
+  const [editStatus, setEditStatus] = useState('active');
+  const [editSaving, setEditSaving] = useState(false);
+  const [editMessage, setEditMessage] = useState({ text: '', type: '' });
+  const [editUserPassword, setEditUserPassword] = useState('');
+  const [editPasswordSaving, setEditPasswordSaving] = useState(false);
+  const [editPasswordMessage, setEditPasswordMessage] = useState({ text: '', type: '' });
+
+
+
   // Cases Tab Data
   const [cases, setCases] = useState([]);
   const [psychologists, setPsychologists] = useState([]);
@@ -336,6 +351,95 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleOpenEditModal = (acc) => {
+    setEditingUser(acc);
+    setEditFullName(acc.full_name || '');
+    setEditPhone(acc.phone || '');
+    setEditRole(acc.role || 'user');
+    setEditStatus(acc.status || 'active');
+    setEditMessage({ text: '', type: '' });
+    setEditUserPassword('');
+    setEditPasswordMessage({ text: '', type: '' });
+    setEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditModalOpen(false);
+    setEditingUser(null);
+    setEditMessage({ text: '', type: '' });
+    setEditUserPassword('');
+    setEditPasswordMessage({ text: '', type: '' });
+  };
+
+  const handleSaveEditProfile = async (e) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    if (!editFullName.trim()) {
+      setEditMessage({ text: 'Full name cannot be empty.', type: 'error' });
+      return;
+    }
+
+    setEditSaving(true);
+    setEditMessage({ text: '', type: '' });
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: editFullName.trim(),
+          phone: editPhone.trim() || null,
+          role: editRole,
+          status: editStatus
+        })
+        .eq('id', editingUser.id);
+
+      if (error) throw error;
+
+      setEditMessage({ text: 'User profile updated successfully!', type: 'success' });
+      setAccountMessage({ text: `Profile for "${editFullName.trim()}" updated successfully.`, type: 'success' });
+
+      await fetchAccounts();
+
+      setTimeout(() => {
+        handleCloseEditModal();
+      }, 1000);
+    } catch (err) {
+      setEditMessage({ text: err.message || 'Failed to update user profile.', type: 'error' });
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleUserPasswordReset = async (e) => {
+    e.preventDefault();
+    if (!editingUser || !editUserPassword) return;
+
+    if (editUserPassword.length < 6) {
+      setEditPasswordMessage({ text: 'Password must be at least 6 characters long.', type: 'error' });
+      return;
+    }
+
+    setEditPasswordSaving(true);
+    setEditPasswordMessage({ text: '', type: '' });
+
+    try {
+      const { error } = await supabase.rpc('admin_change_user_password', {
+        p_profile_id: editingUser.id,
+        p_new_password: editUserPassword
+      });
+
+      if (error) throw error;
+
+      setEditPasswordMessage({ text: `Password for "${editingUser.full_name || editingUser.email}" updated successfully!`, type: 'success' });
+      setEditUserPassword('');
+    } catch (err) {
+      setEditPasswordMessage({ text: err.message || 'Failed to update user password.', type: 'error' });
+    } finally {
+      setEditPasswordSaving(false);
+    }
+  };
+
   const handleToggleStatus = async (profileId, currentStatus) => {
     setAccountActionLoading(true);
     setAccountMessage({ text: '', type: '' });
@@ -369,9 +473,19 @@ export default function AdminDashboard() {
         p_profile_id: profileId
       });
 
-      if (error) throw error;
+      if (error) {
+        // Fallback to direct profile delete if RPC not present
+        const { error: deleteErr } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', profileId);
+        if (deleteErr) throw error;
+      }
 
       setAccountMessage({ text: `Account for "${name}" was deleted successfully.`, type: 'success' });
+      if (editingUser && editingUser.id === profileId) {
+        handleCloseEditModal();
+      }
       await Promise.all([fetchAccounts(), fetchCases(), fetchAuditLogs()]);
     } catch (err) {
       setAccountMessage({ text: err.message || 'Failed to delete account.', type: 'error' });
@@ -1173,9 +1287,10 @@ export default function AdminDashboard() {
                     <table className="table">
                       <thead>
                         <tr>
-                          <th>Name</th>
+                          <th>User Details</th>
                           <th>Role</th>
                           <th>Status</th>
+                          <th>Edit Profile</th>
                           <th>Toggle Status</th>
                           <th>Delete Account</th>
                         </tr>
@@ -1186,16 +1301,27 @@ export default function AdminDashboard() {
                             <td>
                               <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{acc.full_name}</div>
                               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{acc.email}</div>
+                              {acc.phone && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📞 {acc.phone}</div>}
                             </td>
                             <td>
                               <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: acc.role === 'psychologist' ? 'var(--secondary)' : acc.role === 'admin' ? 'var(--primary)' : 'var(--text-secondary)' }}>
-                                {acc.role}
+                                {acc.role === 'user' ? 'Parent / User' : acc.role}
                               </span>
                             </td>
                             <td>
                               <span className={`badge badge-${acc.status}`}>
                                 {acc.status}
                               </span>
+                            </td>
+                            <td>
+                              <button
+                                onClick={() => handleOpenEditModal(acc)}
+                                className="btn btn-outline"
+                                style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                                disabled={accountActionLoading}
+                              >
+                                ✏️ Edit
+                              </button>
                             </td>
                             <td>
                               {acc.role !== 'admin' ? (
@@ -2271,6 +2397,208 @@ export default function AdminDashboard() {
 
         </main>
       </div>
+
+      {/* Edit User Profile Modal */}
+      {editModalOpen && editingUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '1rem'
+        }}>
+          <div className="card" style={{
+            width: '100%',
+            maxWidth: '520px',
+            padding: '1.75rem',
+            boxShadow: 'var(--shadow-lg)',
+            background: 'var(--bg-card)',
+            borderRadius: 'var(--border-radius-md)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+              <div>
+                <h3 style={{ fontSize: '1.2rem', margin: 0, fontWeight: '700', color: 'var(--text-primary)' }}>✏️ Edit User Profile</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>Updating details for {editingUser.email}</p>
+              </div>
+              <button
+                onClick={handleCloseEditModal}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.25rem',
+                  cursor: 'pointer',
+                  color: 'var(--text-muted)',
+                  padding: '0.25rem 0.5rem'
+                }}
+                disabled={editSaving}
+              >
+                ✖
+              </button>
+            </div>
+
+            {editMessage.text && (
+              <div className={`alert alert-${editMessage.type}`} style={{ marginBottom: '1rem' }}>
+                <span>{editMessage.type === 'error' ? '⚠️' : '✅'} {editMessage.text}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEditProfile}>
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label">Email Address (Account ID)</label>
+                <input
+                  type="email"
+                  className="form-input"
+                  value={editingUser.email || ''}
+                  disabled
+                  style={{ backgroundColor: 'var(--bg-main)', opacity: 0.8, cursor: 'not-allowed' }}
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label" htmlFor="edit-fullname-input">Full Name</label>
+                <input
+                  type="text"
+                  id="edit-fullname-input"
+                  className="form-input"
+                  value={editFullName}
+                  onChange={(e) => setEditFullName(e.target.value)}
+                  required
+                  disabled={editSaving}
+                  placeholder="e.g. Dr Sarah Smith"
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label" htmlFor="edit-phone-input">Phone Number</label>
+                <input
+                  type="text"
+                  id="edit-phone-input"
+                  className="form-input"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  disabled={editSaving}
+                  placeholder="e.g. +1 555-0199"
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="edit-role-select">Role</label>
+                  <select
+                    id="edit-role-select"
+                    className="form-select"
+                    value={editRole}
+                    onChange={(e) => setEditRole(e.target.value)}
+                    disabled={editSaving || editingUser.id === profile?.id}
+                  >
+                    <option value="user">User / Parent</option>
+                    <option value="psychologist">Clinical Psychologist</option>
+                    <option value="admin">System Administrator</option>
+                  </select>
+                  {editingUser.id === profile?.id && (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Cannot change your own admin role.</span>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" htmlFor="edit-status-select">Status</label>
+                  <select
+                    id="edit-status-select"
+                    className="form-select"
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value)}
+                    disabled={editSaving || editingUser.id === profile?.id}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                  {editingUser.id === profile?.id && (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Cannot deactivate self.</span>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ padding: '0.5rem 1.25rem', width: '100%' }}
+                  disabled={editSaving}
+                >
+                  {editSaving ? <div className="spinner"></div> : 'Save Profile Changes'}
+                </button>
+              </div>
+            </form>
+
+            {/* Change Password Section */}
+            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px dashed var(--border-color)' }}>
+              <h4 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+                🔑 Change User Password
+              </h4>
+
+              {editPasswordMessage.text && (
+                <div className={`alert alert-${editPasswordMessage.type}`} style={{ marginBottom: '0.75rem', padding: '0.5rem 0.75rem', fontSize: '0.8rem' }}>
+                  <span>{editPasswordMessage.type === 'error' ? '⚠️' : '✅'} {editPasswordMessage.text}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleUserPasswordReset} style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="password"
+                  className="form-input"
+                  placeholder="New password (min 6 chars)"
+                  value={editUserPassword}
+                  onChange={(e) => setEditUserPassword(e.target.value)}
+                  disabled={editPasswordSaving}
+                  style={{ flex: 1, fontSize: '0.85rem' }}
+                />
+                <button
+                  type="submit"
+                  className="btn btn-outline"
+                  style={{ padding: '0.5rem 0.9rem', fontSize: '0.85rem', whitespace: 'nowrap' }}
+                  disabled={editPasswordSaving || !editUserPassword}
+                >
+                  {editPasswordSaving ? <div className="spinner"></div> : 'Update Password'}
+                </button>
+              </form>
+            </div>
+
+            {/* Modal Footer with Delete Account */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+              {editingUser.id !== profile?.id ? (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteUser(editingUser.id, editingUser.full_name || editingUser.email)}
+                  className="btn btn-outline"
+                  style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', color: 'var(--color-error)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                  disabled={accountActionLoading || editSaving}
+                >
+                  🗑️ Delete Account
+                </button>
+              ) : (
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Admin Protected</span>
+              )}
+
+              <button
+                type="button"
+                onClick={handleCloseEditModal}
+                className="btn btn-outline"
+                style={{ padding: '0.4rem 1rem', fontSize: '0.85rem' }}
+                disabled={editSaving}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
