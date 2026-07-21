@@ -85,9 +85,24 @@ export default function ParentDashboard() {
   const [childProfileMessage, setChildProfileMessage] = useState({ text: '', type: '' });
   const [resourceLibrary, setResourceLibrary] = useState([]);
 
-  // Video playback
+  // Video playback & seeking
   const [activeVideoUrl, setActiveVideoUrl] = useState('');
   const [activeVideoId, setActiveVideoId] = useState('');
+  const videoRef = useRef(null);
+
+  const formatTime = (secs) => {
+    if (secs === undefined || secs === null || isNaN(secs)) return '00:00';
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleSeekVideo = (seconds) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = seconds;
+      videoRef.current.play();
+    }
+  };
 
   // Secure Chat Q&A states
   const [chatMessages, setChatMessages] = useState([]);
@@ -113,16 +128,24 @@ export default function ParentDashboard() {
       if (casesError) throw casesError;
 
       const casesWithReviews = await Promise.all(casesData.map(async (c) => {
+        let reviewData = null;
         if (c.status === 'completed') {
-          const { data: reviewData } = await supabase
+          const { data } = await supabase
             .from('psychologist_reviews')
             .select('*')
             .eq('case_id', c.id)
             .eq('status', 'completed')
             .maybeSingle();
-          return { ...c, review: reviewData };
+          reviewData = data;
         }
-        return c;
+
+        const { data: annotationsData } = await supabase
+          .from('video_annotations')
+          .select('*')
+          .eq('case_id', c.id)
+          .order('timestamp_seconds', { ascending: true });
+
+        return { ...c, review: reviewData, annotations: annotationsData || [] };
       }));
 
       setCases(casesWithReviews);
@@ -416,6 +439,18 @@ export default function ParentDashboard() {
               <div class="metric-val">${c.review.eye_contact || 'N/A'}</div>
             </div>
           </div>
+
+          ${c.annotations && c.annotations.length > 0 ? `
+            <div class="section-title">Timestamped Video Observations</div>
+            <div style="margin-bottom: 1.5rem;">
+              ${c.annotations.map(a => `
+                <div style="display:flex;gap:0.75rem;margin-bottom:0.4rem;font-size:0.9rem;">
+                  <strong style="color:#059669;min-width:65px;">[${formatTime(a.timestamp_seconds)}]</strong>
+                  <span>${a.observation_note}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
 
           <div class="section-title">Detailed Behavioral Observations</div>
           <div class="content-block">${c.review.observations || 'No observations detailed.'}</div>
@@ -1118,10 +1153,66 @@ export default function ParentDashboard() {
                           </button>
                         </div>
 
-                        {/* Video Player */}
+                        {/* Video Player & Timewise Observations */}
                         {activeVideoId === c.id && activeVideoUrl && (
-                          <div style={{ margin: '1rem 0', background: '#000', borderRadius: '8px', overflow: 'hidden', display: 'flex' }}>
-                            <video src={activeVideoUrl} controls style={{ width: '100%', maxHeight: '350px' }} />
+                          <div style={{ margin: '1rem 0', background: '#0f172a', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+                            <video ref={videoRef} src={activeVideoUrl} controls style={{ width: '100%', maxHeight: '380px', display: 'block' }} />
+                            
+                            {/* Timewise Psychologist Video Observations Panel */}
+                            <div style={{ background: '#1e293b', padding: '1.25rem', color: '#fff', borderTop: '1px solid #334155' }}>
+                              <h4 style={{ fontSize: '0.95rem', color: '#38bdf8', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                ⏱️ Psychologist Timewise Video Observations
+                              </h4>
+                              
+                              {(!c.annotations || c.annotations.length === 0) ? (
+                                <div style={{ fontSize: '0.825rem', color: '#94a3b8', fontStyle: 'italic', padding: '0.25rem 0' }}>
+                                  No specific timestamped video flags added yet for this recording.
+                                </div>
+                              ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: '200px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+                                  {c.annotations.map(ann => (
+                                    <div key={ann.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#0f172a', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid #334155' }}>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSeekVideo(ann.timestamp_seconds)}
+                                        style={{ background: '#0284c7', color: '#fff', border: 'none', padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                                        title="Click to jump to this moment in video"
+                                      >
+                                        ▶ {formatTime(ann.timestamp_seconds)}
+                                      </button>
+                                      <span style={{ fontSize: '0.85rem', color: '#f1f5f9' }}>{ann.observation_note}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Timewise Audio Dialogue Transcript */}
+                              {c.transcription && (
+                                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
+                                  <h5 style={{ fontSize: '0.875rem', color: '#cbd5e1', margin: '0 0 0.5rem 0' }}>
+                                    🎙️ Timestamped Audio & Dialogue Transcript (AI Whisper)
+                                  </h5>
+                                  <div style={{ maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                    {c.transcription.split('\n').map((line, idx) => {
+                                      const match = line.match(/^\[([\d.]+)\]\s+\[([\d:]+)\]\s+(.+)$/);
+                                      if (!match) return <div key={idx} style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{line}</div>;
+                                      return (
+                                        <div key={idx} style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', alignItems: 'flex-start' }}>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleSeekVideo(parseFloat(match[1]))}
+                                            style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: 'none', padding: '0.15rem 0.45rem', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}
+                                          >
+                                            {match[2]}
+                                          </button>
+                                          <span style={{ color: '#e2e8f0' }}>{match[3]}</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
 
@@ -1196,6 +1287,35 @@ export default function ParentDashboard() {
                               <div><strong>Motor Repetitions:</strong> <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{c.review.motor_repetitions || 'Not Evaluated'}</span></div>
                               <div><strong>Eye Contact:</strong> <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{c.review.eye_contact || 'Not Evaluated'}</span></div>
                             </div>
+                            
+                            {/* Timewise Video Observations Breakdown */}
+                            {c.annotations && c.annotations.length > 0 && (
+                              <div style={{ margin: '1rem 0', background: '#ffffff', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '1rem' }}>
+                                <span style={{ color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', display: 'block', marginBottom: '0.75rem' }}>
+                                  ⏱️ Timewise Video Observations Timeline
+                                </span>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                  {c.annotations.map(ann => (
+                                    <div key={ann.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem' }}>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (activeVideoId !== c.id) {
+                                            handlePlayVideo(c.id, c.video_path);
+                                          }
+                                          setTimeout(() => handleSeekVideo(ann.timestamp_seconds), 300);
+                                        }}
+                                        style={{ background: 'var(--primary-glow)', color: 'var(--primary)', border: '1px solid var(--primary)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer' }}
+                                        title="Click to play video at this timestamp"
+                                      >
+                                        ▶ {formatTime(ann.timestamp_seconds)}
+                                      </button>
+                                      <span style={{ color: 'var(--text-primary)' }}>{ann.observation_note}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                             
                             <div style={{ marginBottom: '0.75rem' }}>
                               <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 'bold', display: 'block' }}>BEHAVIORAL OBSERVATIONS:</span>
