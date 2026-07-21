@@ -5,6 +5,20 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import NotificationCenter from '@/components/NotificationCenter';
 
+// M-CHAT-R 10-Question Checklist
+const MCHAT_QUESTIONS = [
+  { id: 1, text: "If you point at something across the room, does your child look at it? (e.g. pointing to a toy or animal)", atypicalVal: "No" },
+  { id: 2, text: "Have you ever wondered if your child might be deaf?", atypicalVal: "Yes" },
+  { id: 3, text: "Does your child play pretend or make-believe? (e.g., pretend to drink from an empty cup, talk on a toy phone)", atypicalVal: "No" },
+  { id: 4, text: "Does your child like climbing on things? (e.g. furniture, playground equipment)", atypicalVal: "No" },
+  { id: 5, text: "Does your child make unusual finger movements near his or her eyes? (e.g. wiggling fingers close to face)", atypicalVal: "Yes" },
+  { id: 6, text: "Does your child point with one finger to ask for something or to get help? (e.g. pointing to a toy out of reach)", atypicalVal: "No" },
+  { id: 7, text: "Does your child point with one finger to show you something interesting? (e.g. pointing to an airplane or truck)", atypicalVal: "No" },
+  { id: 8, text: "Is your child interested in other children? (e.g. watching them, smiling, or joining their play)", atypicalVal: "No" },
+  { id: 9, text: "Does your child show you things by bringing them to you or holding them up? (e.g. showing a book or drawing)", atypicalVal: "No" },
+  { id: 10, text: "Does your child respond to his or her name when you call? (e.g. looks up, speaks, or turns face)", atypicalVal: "No" }
+];
+
 export default function PsychologistDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'cases', 'profile', 'notifications'
@@ -260,26 +274,35 @@ export default function PsychologistDashboard() {
       setChildHistoryCases([]);
     }
 
-    await Promise.all([
-      fetchAnnotations(c.id),
-      supabase.rpc('log_audit_action', { p_case_id: c.id, p_action: 'viewed_case' })
-    ]);
-
-    setVideoLoading(true);
     try {
-      const { data, error } = await supabase.storage
-        .from('child-videos')
-        .createSignedUrl(c.video_path, 600);
-
-      if (error) throw error;
-      setVideoUrl(data.signedUrl);
-
-      // Log Viewed Video Compliance Audit Log
-      await supabase.rpc('log_audit_action', { p_case_id: c.id, p_action: 'viewed_video' });
+      await fetchAnnotations(c.id);
     } catch (err) {
-      console.error('Video error:', err);
-    } finally {
-      setVideoLoading(false);
+      console.error('Error fetching annotations:', err);
+    }
+
+    try {
+      await supabase.rpc('log_audit_action', { p_case_id: c.id, p_action: 'viewed_case' });
+    } catch (err) {
+      console.error('Audit log error:', err);
+    }
+
+    if (c.video_path) {
+      setVideoLoading(true);
+      try {
+        const { data, error } = await supabase.storage
+          .from('child-videos')
+          .createSignedUrl(c.video_path, 600);
+
+        if (error) throw error;
+        setVideoUrl(data?.signedUrl || '');
+
+        // Log Viewed Video Compliance Audit Log
+        await supabase.rpc('log_audit_action', { p_case_id: c.id, p_action: 'viewed_video' });
+      } catch (err) {
+        console.error('Video error:', err);
+      } finally {
+        setVideoLoading(false);
+      }
     }
   };
 

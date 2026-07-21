@@ -424,17 +424,30 @@ export default function AdminDashboard() {
     setEditPasswordMessage({ text: '', type: '' });
 
     try {
-      const { error } = await supabase.rpc('admin_change_user_password', {
-        p_profile_id: editingUser.id,
-        p_new_password: editUserPassword
-      });
+      // If updating self (currently logged in admin account), use standard Supabase auth updateUser!
+      if (editingUser.id === profile?.id) {
+        const { error } = await supabase.auth.updateUser({ password: editUserPassword });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.rpc('admin_change_user_password', {
+          p_profile_id: editingUser.id,
+          p_new_password: editUserPassword
+        });
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       setEditPasswordMessage({ text: `Password for "${editingUser.full_name || editingUser.email}" updated successfully!`, type: 'success' });
       setEditUserPassword('');
     } catch (err) {
-      setEditPasswordMessage({ text: err.message || 'Failed to update user password.', type: 'error' });
+      if (err.message?.includes('schema cache') || err.message?.includes('Could not find the function')) {
+        setEditPasswordMessage({
+          text: 'Database function missing: Please execute the provided SQL migration in your Supabase SQL Editor to enable resetting other users\' passwords.',
+          type: 'error'
+        });
+      } else {
+        setEditPasswordMessage({ text: err.message || 'Failed to update user password.', type: 'error' });
+      }
     } finally {
       setEditPasswordSaving(false);
     }
