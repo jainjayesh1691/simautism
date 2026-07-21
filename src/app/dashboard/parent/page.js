@@ -85,6 +85,14 @@ export default function ParentDashboard() {
   const [childProfileMessage, setChildProfileMessage] = useState({ text: '', type: '' });
   const [resourceLibrary, setResourceLibrary] = useState([]);
 
+  // Edit Child Profile States
+  const [editingChildProfile, setEditingChildProfile] = useState(null);
+  const [editChildName, setEditChildName] = useState('');
+  const [editChildDOB, setEditChildDOB] = useState('');
+  const [editChildGender, setEditChildGender] = useState('Male');
+  const [editChildHistory, setEditChildHistory] = useState('');
+  const [updatingChildProfile, setUpdatingChildProfile] = useState(false);
+
   // Video playback & seeking
   const [activeVideoUrl, setActiveVideoUrl] = useState('');
   const [activeVideoId, setActiveVideoId] = useState('');
@@ -226,6 +234,72 @@ export default function ParentDashboard() {
       setChildProfileMessage({ text: err.message || 'Failed to create child profile.', type: 'error' });
     } finally {
       setSavingChildProfile(false);
+    }
+  };
+
+  const handleOpenEditChildModal = (child) => {
+    setEditingChildProfile(child);
+    setEditChildName(child.name || '');
+    setEditChildDOB(child.date_of_birth ? child.date_of_birth.substring(0, 10) : '');
+    setEditChildGender(child.gender || 'Male');
+    setEditChildHistory(child.developmental_history || '');
+  };
+
+  const handleCloseEditChildModal = () => {
+    setEditingChildProfile(null);
+    setEditChildName('');
+    setEditChildDOB('');
+    setEditChildGender('Male');
+    setEditChildHistory('');
+  };
+
+  const handleUpdateChildProfile = async (e) => {
+    e.preventDefault();
+    if (!editingChildProfile || !profile) return;
+
+    setUpdatingChildProfile(true);
+    setChildProfileMessage({ text: '', type: '' });
+
+    try {
+      const { error } = await supabase
+        .from('child_profiles')
+        .update({
+          name: editChildName,
+          date_of_birth: editChildDOB || null,
+          gender: editChildGender,
+          developmental_history: editChildHistory || null
+        })
+        .eq('id', editingChildProfile.id);
+
+      if (error) throw error;
+
+      setChildProfileMessage({ text: 'Child profile updated successfully!', type: 'success' });
+      handleCloseEditChildModal();
+      await fetchChildProfiles(profile.id);
+      setTimeout(() => setChildProfileMessage({ text: '', type: '' }), 3000);
+    } catch (err) {
+      setChildProfileMessage({ text: err.message || 'Failed to update child profile.', type: 'error' });
+    } finally {
+      setUpdatingChildProfile(false);
+    }
+  };
+
+  const handleDeleteChildProfile = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete the profile for ${name}?`)) return;
+
+    try {
+      const { error } = await supabase
+        .from('child_profiles')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setChildProfileMessage({ text: 'Child profile deleted.', type: 'success' });
+      await fetchChildProfiles(profile.id);
+      setTimeout(() => setChildProfileMessage({ text: '', type: '' }), 3000);
+    } catch (err) {
+      alert('Failed to delete child profile: ' + err.message);
     }
   };
 
@@ -1507,7 +1581,27 @@ export default function ParentDashboard() {
                           <div key={p.id} style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '1rem', background: 'rgba(0,0,0,0.01)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <strong style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>{p.name}</strong>
-                              <span className="badge badge-assigned" style={{ fontSize: '0.7rem' }}>{p.gender}</span>
+                              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <span className="badge badge-assigned" style={{ fontSize: '0.7rem' }}>{p.gender}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditChildModal(p)}
+                                  className="btn btn-outline"
+                                  style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}
+                                  title="Edit Child Profile"
+                                >
+                                  ✏️ Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteChildProfile(p.id, p.name)}
+                                  className="btn btn-outline"
+                                  style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: 'var(--color-error)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                                  title="Delete Child Profile"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
                             </div>
                             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
                               Date of Birth: {p.date_of_birth ? new Date(p.date_of_birth).toLocaleDateString() : 'N/A'} ({ageText})
@@ -2029,6 +2123,100 @@ export default function ParentDashboard() {
 
         </main>
       </div>
+
+      {/* Edit Child Profile Modal */}
+      {editingChildProfile && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1100,
+          padding: '1rem'
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: '520px', position: 'relative' }}>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+              ✏️ Edit Child Profile: {editingChildProfile.name}
+            </h3>
+
+            <form onSubmit={handleUpdateChildProfile}>
+              <div className="form-group">
+                <label className="form-label" htmlFor="edit-child-name">Full Name</label>
+                <input
+                  type="text"
+                  id="edit-child-name"
+                  className="form-input"
+                  value={editChildName}
+                  onChange={(e) => setEditChildName(e.target.value)}
+                  required
+                  disabled={updatingChildProfile}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="edit-child-dob">Date of Birth</label>
+                  <input
+                    type="date"
+                    id="edit-child-dob"
+                    className="form-input"
+                    value={editChildDOB}
+                    onChange={(e) => setEditChildDOB(e.target.value)}
+                    disabled={updatingChildProfile}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="edit-child-gender">Gender</label>
+                  <select
+                    id="edit-child-gender"
+                    className="form-select"
+                    value={editChildGender}
+                    onChange={(e) => setEditChildGender(e.target.value)}
+                    disabled={updatingChildProfile}
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label" htmlFor="edit-child-history">Developmental History</label>
+                <textarea
+                  id="edit-child-history"
+                  className="form-input"
+                  style={{ minHeight: '100px', resize: 'vertical' }}
+                  value={editChildHistory}
+                  onChange={(e) => setEditChildHistory(e.target.value)}
+                  disabled={updatingChildProfile}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.25rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={handleCloseEditChildModal}
+                  disabled={updatingChildProfile}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={updatingChildProfile || !editChildName.trim()}
+                >
+                  {updatingChildProfile ? <div className="spinner"></div> : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );
