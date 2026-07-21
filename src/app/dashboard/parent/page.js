@@ -419,7 +419,6 @@ export default function ParentDashboard() {
             <div class="meta-item"><strong>Child Name:</strong> ${c.child_name}</div>
             <div class="meta-item"><strong>Date of Birth / Age:</strong> ${c.child_age} years</div>
             <div class="meta-item"><strong>Gender:</strong> ${c.child_gender}</div>
-            <div class="meta-item"><strong>Assigned Psychologist:</strong> ${c.assigned_psychologist?.full_name || 'N/A'} (${c.assigned_psychologist?.email || 'N/A'})</div>
             <div class="meta-item"><strong>Date of Review:</strong> ${new Date(c.review.updated_at).toLocaleDateString()}</div>
             <div class="meta-item"><strong>M-CHAT-R Risk Level:</strong> <span class="badge">${c.mchat_score !== null ? (c.mchat_score <= 2 ? 'Low Risk' : c.mchat_score <= 7 ? 'Medium Risk' : 'High Risk') + ' (' + c.mchat_score + '/10)' : 'N/A'}</span></div>
           </div>
@@ -1126,14 +1125,6 @@ export default function ParentDashboard() {
                           </div>
                         )}
 
-                        {/* Assigned Psychologist */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.75rem 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                          <span>👩‍⚕️ Assigned Psychologist:</span>
-                          <strong style={{ color: 'var(--text-primary)' }}>
-                            {c.assigned_psychologist ? c.assigned_psychologist.full_name : 'Awaiting Assignment'}
-                          </strong>
-                        </div>
-
                         {/* Interactive Buttons */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.25rem', marginBottom: '1.25rem' }}>
                           <button
@@ -1161,7 +1152,7 @@ export default function ParentDashboard() {
                             {/* Timewise Psychologist Video Observations Panel */}
                             <div style={{ background: '#1e293b', padding: '1.25rem', color: '#fff', borderTop: '1px solid #334155' }}>
                               <h4 style={{ fontSize: '0.95rem', color: '#38bdf8', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                ⏱️ Psychologist Timewise Video Observations
+                                ⏱️ AI Timewise Video Observations
                               </h4>
                               
                               {(!c.annotations || c.annotations.length === 0) ? (
