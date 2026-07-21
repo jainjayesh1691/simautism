@@ -1153,10 +1153,10 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="metric-card">
-                  <div className="metric-icon" style={{ background: 'rgba(13, 148, 136, 0.1)', color: 'var(--secondary)' }}>👩‍⚕️</div>
+                  <div className="metric-icon" style={{ background: 'rgba(13, 148, 136, 0.1)', color: 'var(--secondary)' }}>🤖</div>
                   <div className="metric-info">
                     <span className="metric-value">{totalPsychologists}</span>
-                    <span className="metric-label">Psychologists</span>
+                    <span className="metric-label">AI Evaluators</span>
                   </div>
                 </div>
 
@@ -1200,9 +1200,9 @@ export default function AdminDashboard() {
 
                 {/* Psychologist Load Breakdown */}
                 <div className="card" style={{ padding: '1.5rem', gridRow: 'span 2' }}>
-                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>👩‍⚕️ Psychologist Loads</h4>
+                  <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>🤖 AI Evaluator Loads</h4>
                   {psychologistLoads.length === 0 ? (
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No active psychologists registered.</p>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No active AI evaluators registered.</p>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       {psychologistLoads.map((p, idx) => (
@@ -1478,7 +1478,7 @@ export default function AdminDashboard() {
                         disabled={accountActionLoading}
                       >
                         <option value="user">User / Parent</option>
-                        <option value="psychologist">Clinical Psychologist</option>
+                        <option value="psychologist">AI Evaluator</option>
                         <option value="admin">System Administrator</option>
                       </select>
                     </div>
@@ -1518,7 +1518,7 @@ export default function AdminDashboard() {
               {/* Manual Reassign Form */}
               {reassignCaseId && (
                 <section className="card" style={{ maxWidth: '600px', borderLeft: '4px solid var(--secondary)' }}>
-                  <h2 style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}>Reassign Case Psychologist</h2>
+                  <h2 style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}>Reassign Case AI Evaluator</h2>
                   
                   {caseMessage.text && (
                     <div className={`alert alert-${caseMessage.type}`} id="case-alert">
@@ -1528,7 +1528,7 @@ export default function AdminDashboard() {
 
                   <form onSubmit={handleReassign} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
                     <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                      <label className="form-label" htmlFor="reassign-select">Select Available Active Psychologist</label>
+                      <label className="form-label" htmlFor="reassign-select">Select Available Active AI Evaluator</label>
                       <select
                         id="reassign-select"
                         className="form-select"
@@ -1536,7 +1536,7 @@ export default function AdminDashboard() {
                         onChange={(e) => setReassignPsychologistId(e.target.value)}
                         required
                       >
-                        <option value="">-- Choose Psychologist --</option>
+                        <option value="">-- Choose AI Evaluator --</option>
                         {psychologists.map(p => (
                           <option key={p.id} value={p.id}>{p.full_name} ({p.email})</option>
                         ))}
@@ -1785,7 +1785,7 @@ export default function AdminDashboard() {
                     <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📺</div>
                     <h2>Select a Review File</h2>
                     <p style={{ fontSize: '0.95rem', marginTop: '0.25rem' }}>
-                      Pick a case from the sidebar to inspect child video logs and edit psychologist assessment reviews.
+                      Pick a case from the sidebar to inspect child video logs and edit AI assessment reviews.
                     </p>
                   </div>
                 ) : (

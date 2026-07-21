@@ -754,7 +754,7 @@ export default function PsychologistDashboard() {
             <div className="nav-user-name" style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {profile.full_name}
             </div>
-            <div className="nav-user-role">Clinical Psychologist</div>
+            <div className="nav-user-role">AI Evaluator</div>
           </div>
         </div>
 

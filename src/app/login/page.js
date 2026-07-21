@@ -99,7 +99,7 @@ export default function Login() {
 
         <h2 style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }} id="login-title">Portal Sign In</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.75rem' }}>
-          For Parents and Psychologists
+          For Parents and AI Evaluators
         </p>
 
         {error && (

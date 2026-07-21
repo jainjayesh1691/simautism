@@ -644,7 +644,7 @@ export default function ParentDashboard() {
       }
 
       setUploadProgress(100);
-      setSubmitMessage({ text: `Case submitted successfully! M-CHAT Risk Score: ${score}/10. Psychologist is being assigned.`, type: 'success' });
+      setSubmitMessage({ text: `Case submitted successfully! M-CHAT Risk Score: ${score}/10. AI Evaluator is being assigned.`, type: 'success' });
       
       // Reset form
       setSelectedProfileId('');
@@ -1210,7 +1210,7 @@ export default function ParentDashboard() {
                         {/* Secure messaging chat panel */}
                         {viewingChatCaseId === c.id && (
                           <div style={{ margin: '1rem 0' }}>
-                            <h4 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>💬 Q&A messaging with Psychologist</h4>
+                            <h4 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>💬 Q&A messaging with AI Evaluator</h4>
                             
                             <div className="chat-thread">
                               <div className="chat-messages">

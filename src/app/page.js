@@ -64,7 +64,7 @@ export default function Home() {
               lineHeight: '1.7',
               maxWidth: '600px'
             }}>
-              A secure, HIPAA-aligned platform connecting parents and psychologists. Upload observation videos, track development stages, and collaborate on structured assessment reports with full data protection.
+              A secure, HIPAA-aligned platform connecting parents and AI evaluators. Upload observation videos, track development stages, and collaborate on structured assessment reports with full data protection.
             </p>
 
             {/* Portals Access Links */}
@@ -75,7 +75,7 @@ export default function Home() {
               marginBottom: '2.5rem'
             }}>
               <Link href="/login" className="btn btn-primary" style={{ padding: '1rem 2.25rem', fontSize: '1.05rem' }} id="btn-login-portal">
-                Parent & Psychologist Portal
+                Parent & AI Portal
               </Link>
               <Link href="/admin/login" className="btn btn-outline" style={{ padding: '1rem 2.25rem', fontSize: '1.05rem' }} id="btn-admin-portal">
                 Admin Dashboard
@@ -135,13 +135,13 @@ export default function Home() {
             <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🩺</div>
-                <h3 style={{ marginBottom: '0.5rem', fontSize: '1.4rem' }}>For Clinical Psychologists</h3>
+                <h3 style={{ marginBottom: '0.5rem', fontSize: '1.4rem' }}>For AI Assessment</h3>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
                   Review parent-submitted observation videos using professional timeline tools. Add time-stamped clinical notes, rate assessment metrics, and build customized reports efficiently.
                 </p>
               </div>
               <Link href="/login" style={{ fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: 'var(--primary)' }}>
-                Access Psychologist Portal →
+                Access AI Portal →
               </Link>
             </div>
 
@@ -212,7 +212,7 @@ export default function Home() {
             <h4 style={{ color: '#b45309', fontSize: '1.1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               ⚠️ Clinical Observation Disclaimer
             </h4>
-            This platform is designed solely for observation hosting and psychologist review support. It does not offer automated diagnostics. Official autism spectrum diagnosis must be verified through clinical sessions with qualified medical professionals.
+            This platform is designed solely for observation hosting and AI review support. It does not offer automated diagnostics. Official autism spectrum diagnosis must be verified through clinical sessions with qualified medical professionals.
           </div>
         </section>
 
@@ -238,7 +238,7 @@ export default function Home() {
             <div style={{ fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Portals</div>
             <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               <li><Link href="/login" style={{ fontSize: '0.825rem' }}>Parent Portal</Link></li>
-              <li><Link href="/login" style={{ fontSize: '0.825rem' }}>Psychologist Portal</Link></li>
+              <li><Link href="/login" style={{ fontSize: '0.825rem' }}>AI Portal</Link></li>
               <li><Link href="/admin/login" style={{ fontSize: '0.825rem' }}>Admin Dashboard</Link></li>
             </ul>
           </div>
