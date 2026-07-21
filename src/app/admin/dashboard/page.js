@@ -1318,7 +1318,7 @@ export default function AdminDashboard() {
                             </td>
                             <td>
                               <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: acc.role === 'psychologist' ? 'var(--secondary)' : acc.role === 'admin' ? 'var(--primary)' : 'var(--text-secondary)' }}>
-                                {acc.role === 'user' ? 'Parent / User' : acc.role}
+                                {acc.role === 'user' ? 'Parent / User' : acc.role === 'psychologist' ? 'AI Evaluator' : acc.role}
                               </span>
                             </td>
                             <td>
@@ -2512,7 +2512,7 @@ export default function AdminDashboard() {
                     disabled={editSaving || editingUser.id === profile?.id}
                   >
                     <option value="user">User / Parent</option>
-                    <option value="psychologist">Clinical Psychologist</option>
+                    <option value="psychologist">AI Evaluator</option>
                     <option value="admin">System Administrator</option>
                   </select>
                   {editingUser.id === profile?.id && (
