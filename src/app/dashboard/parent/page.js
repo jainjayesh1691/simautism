@@ -96,6 +96,8 @@ export default function ParentDashboard() {
   // Video playback & seeking
   const [activeVideoUrl, setActiveVideoUrl] = useState('');
   const [activeVideoId, setActiveVideoId] = useState('');
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const videoRef = useRef(null);
 
   const formatTime = (secs) => {
@@ -111,6 +113,21 @@ export default function ParentDashboard() {
       videoRef.current.play();
     }
   };
+
+  const handleTimelineClick = (e) => {
+    if (!videoRef.current || !videoDuration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+    const newTime = percentage * videoDuration;
+    videoRef.current.currentTime = newTime;
+    setVideoCurrentTime(newTime);
+  };
+
+  useEffect(() => {
+    setVideoDuration(0);
+    setVideoCurrentTime(0);
+  }, [activeVideoId]);
 
   // Secure Chat Q&A states
   const [chatMessages, setChatMessages] = useState([]);
@@ -1221,7 +1238,143 @@ export default function ParentDashboard() {
                         {/* Video Player & Timewise Observations */}
                         {activeVideoId === c.id && activeVideoUrl && (
                           <div style={{ margin: '1rem 0', background: '#0f172a', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
-                            <video ref={videoRef} src={activeVideoUrl} controls style={{ width: '100%', maxHeight: '380px', display: 'block' }} />
+                            <video
+                              ref={videoRef}
+                              src={activeVideoUrl}
+                              controls
+                              onLoadedMetadata={(e) => setVideoDuration(e.target.duration)}
+                              onTimeUpdate={(e) => setVideoCurrentTime(e.target.currentTime)}
+                              style={{ width: '100%', maxHeight: '380px', display: 'block' }}
+                            />
+
+                            {/* Custom Interactive Timeline with Markers */}
+                            {videoDuration > 0 && (
+                              <div style={{ padding: '0.75rem 1.25rem', background: '#1e293b', borderBottom: '1px solid #334155' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#cbd5e1' }}>
+                                  <span style={{ fontWeight: '500' }}>AI Observation Markers ({c.annotations?.length || 0})</span>
+                                  <span style={{ fontFamily: 'monospace' }}>{formatTime(videoCurrentTime)} / {formatTime(videoDuration)}</span>
+                                </div>
+                                
+                                {/* Timeline Track */}
+                                <div
+                                  onClick={handleTimelineClick}
+                                  style={{
+                                    position: 'relative',
+                                    height: '8px',
+                                    background: '#475569',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    marginBottom: '0.5rem',
+                                    transition: 'height 0.2s',
+                                  }}
+                                  onMouseEnter={(e) => e.currentTarget.style.height = '12px'}
+                                  onMouseLeave={(e) => e.currentTarget.style.height = '8px'}
+                                >
+                                  {/* Progress Fill */}
+                                  <div style={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                    height: '100%',
+                                    width: `${(videoCurrentTime / videoDuration) * 100}%`,
+                                    background: 'linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%)',
+                                    borderRadius: '4px',
+                                    pointerEvents: 'none'
+                                  }} />
+
+                                  {/* Markers */}
+                                  {c.annotations && c.annotations.map(ann => {
+                                    const pct = (ann.timestamp_seconds / videoDuration) * 100;
+                                    if (pct < 0 || pct > 100) return null;
+                                    return (
+                                      <div
+                                        key={ann.id}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleSeekVideo(ann.timestamp_seconds);
+                                        }}
+                                        style={{
+                                          position: 'absolute',
+                                          left: `${pct}%`,
+                                          top: '50%',
+                                          transform: 'translate(-50%, -50%)',
+                                          width: '12px',
+                                          height: '12px',
+                                          borderRadius: '50%',
+                                          background: '#f59e0b',
+                                          border: '2px solid #ffffff',
+                                          boxShadow: '0 0 8px rgba(245, 158, 11, 0.8)',
+                                          cursor: 'pointer',
+                                          zIndex: 10,
+                                          transition: 'transform 0.15s, background-color 0.15s',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.4)';
+                                          e.currentTarget.style.backgroundColor = '#fbbf24';
+                                          const tooltip = document.getElementById(`tooltip-${ann.id}`);
+                                          if (tooltip) {
+                                            tooltip.style.opacity = '1';
+                                            tooltip.style.transform = 'translate(-50%, -100%) translateY(-8px)';
+                                          }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)';
+                                          e.currentTarget.style.backgroundColor = '#f59e0b';
+                                          const tooltip = document.getElementById(`tooltip-${ann.id}`);
+                                          if (tooltip) {
+                                            tooltip.style.opacity = '0';
+                                            tooltip.style.transform = 'translate(-50%, -100%) translateY(0px)';
+                                          }
+                                        }}
+                                      >
+                                        {/* Tooltip */}
+                                        <div
+                                          id={`tooltip-${ann.id}`}
+                                          style={{
+                                            position: 'absolute',
+                                            left: '50%',
+                                            top: 0,
+                                            transform: 'translate(-50%, -100%) translateY(0px)',
+                                            opacity: 0,
+                                            pointerEvents: 'none',
+                                            background: 'rgba(15, 23, 42, 0.95)',
+                                            backdropFilter: 'blur(4px)',
+                                            color: '#ffffff',
+                                            padding: '0.4rem 0.75rem',
+                                            borderRadius: '6px',
+                                            fontSize: '0.75rem',
+                                            whiteSpace: 'normal',
+                                            minWidth: '150px',
+                                            maxWidth: '220px',
+                                            textAlign: 'center',
+                                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                            border: '1px solid #334155',
+                                            zIndex: 100,
+                                            transition: 'opacity 0.2s, transform 0.2s',
+                                          }}
+                                        >
+                                          <div style={{ fontWeight: 'bold', color: '#fbbf24', marginBottom: '2px' }}>
+                                            {formatTime(ann.timestamp_seconds)}
+                                          </div>
+                                          <div>{ann.observation_note}</div>
+                                          <div style={{
+                                            position: 'absolute',
+                                            bottom: '-6px',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: 0,
+                                            height: 0,
+                                            borderLeft: '6px solid transparent',
+                                            borderRight: '6px solid transparent',
+                                            borderTop: '6px solid rgba(15, 23, 42, 0.95)',
+                                          }} />
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
                             
                             {/* Timewise Psychologist Video Observations Panel */}
                             <div style={{ background: '#1e293b', padding: '1.25rem', color: '#fff', borderTop: '1px solid #334155' }}>
