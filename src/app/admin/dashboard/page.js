@@ -825,6 +825,13 @@ export default function AdminDashboard() {
     return `High Risk (${score}/10)`;
   };
 
+  const getMchatBadgeClass = (score) => {
+    if (score === null || score === undefined) return 'uploaded';
+    if (score <= 2) return 'completed';
+    if (score <= 7) return 'review';
+    return 'uploaded';
+  };
+
   // Master Analytics Calculations
   const totalParents = accounts.filter(a => a.role === 'user').length;
   const totalPsychologists = accounts.filter(a => a.role === 'psychologist').length;
