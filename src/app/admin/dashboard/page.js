@@ -1621,7 +1621,7 @@ export default function AdminDashboard() {
                               </td>
                               <td>
                                 <span className={`badge badge-${c.status}`}>
-                                  {c.status.replace('_', ' ')}
+                                  {c.status === 'assigned' ? 'AI Review' : c.status.replace('_', ' ')}
                                 </span>
                               </td>
                               <td>
@@ -1732,7 +1732,7 @@ export default function AdminDashboard() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
                           <strong style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>{c.child_name}</strong>
                           <span className={`badge badge-${c.status}`} style={{ fontSize: '0.65rem' }}>
-                            {c.status.replace('_', ' ')}
+                            {c.status === 'assigned' ? 'AI Review' : c.status.replace('_', ' ')}
                           </span>
                         </div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>

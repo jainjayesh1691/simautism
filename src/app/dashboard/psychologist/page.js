@@ -1041,7 +1041,7 @@ export default function PsychologistDashboard() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
                           <strong style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>{c.child_name}</strong>
                           <span className={`badge badge-${c.status}`} style={{ fontSize: '0.65rem' }}>
-                            {c.status.replace('_', ' ')}
+                            {c.status === 'assigned' ? 'AI Review' : c.status.replace('_', ' ')}
                           </span>
                         </div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
@@ -1449,7 +1449,7 @@ export default function PsychologistDashboard() {
                                 {new Date(item.created_at).toLocaleDateString()} {item.id === selectedCase.id ? '(Current Observation)' : ''}
                               </strong>
                               <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                Age: {item.child_age} yrs • M-CHAT: {item.mchat_score}/10 Risk Tier • Status: <span className="badge badge-assigned" style={{ fontSize: '0.65rem', padding: '0.1rem 0.3rem', textTransform: 'uppercase' }}>{item.status}</span>
+                                Age: {item.child_age} yrs • M-CHAT: {item.mchat_score}/10 Risk Tier • Status: <span className={`badge badge-${item.status}`} style={{ fontSize: '0.65rem', padding: '0.1rem 0.3rem', textTransform: 'uppercase' }}>{item.status === 'assigned' ? 'AI Review' : item.status.replace('_', ' ')}</span>
                               </span>
                               {item.review && (
                                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem', background: 'rgba(0,0,0,0.01)', padding: '0.4rem', borderRadius: '4px' }}>

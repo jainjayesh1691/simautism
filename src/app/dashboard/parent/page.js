@@ -1236,7 +1236,7 @@ export default function ParentDashboard() {
                               </span>
                             )}
                             <span className={`badge badge-${c.status}`}>
-                              {c.status.replace('_', ' ')}
+                              {c.status === 'assigned' ? 'AI Review' : c.status.replace('_', ' ')}
                             </span>
                           </div>
                         </div>

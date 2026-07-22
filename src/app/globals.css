@@ -24,6 +24,8 @@
   /* Status Colors */
   --color-uploaded: #2563eb;      /* Blue */
   --color-assigned: #7c3aed;      /* Purple */
+  --color-ai_review: #7c3aed;
+  --color-ai-review: #7c3aed;
   --color-review: #d97706;        /* Amber */
   --color-completed: #059669;     /* Emerald */
   --color-error: #dc2626;         /* Red */
@@ -241,7 +243,9 @@ a:hover {
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
-.badge-assigned {
+.badge-assigned,
+.badge-ai_review,
+.badge-ai-review {
   background: rgba(139, 92, 246, 0.15);
   color: #a78bfa;
   border: 1px solid rgba(139, 92, 246, 0.3);
