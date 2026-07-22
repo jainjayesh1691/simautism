@@ -124,6 +124,25 @@ export default function ParentDashboard() {
     setVideoCurrentTime(newTime);
   };
 
+  const getActiveAnnotationForCase = (annotations) => {
+    if (!annotations || annotations.length === 0) return null;
+    const sorted = [...annotations].sort((a, b) => a.timestamp_seconds - b.timestamp_seconds);
+    
+    let active = null;
+    for (let i = 0; i < sorted.length; i++) {
+      const ann = sorted[i];
+      const nextAnn = sorted[i + 1];
+      const displayDuration = 6; // Display active comment for 6 seconds
+      const endTime = nextAnn ? nextAnn.timestamp_seconds : ann.timestamp_seconds + displayDuration;
+      
+      if (videoCurrentTime >= ann.timestamp_seconds && videoCurrentTime < endTime) {
+        active = ann;
+        break;
+      }
+    }
+    return active;
+  };
+
   useEffect(() => {
     setVideoDuration(0);
     setVideoCurrentTime(0);
@@ -1235,201 +1254,419 @@ export default function ParentDashboard() {
                           </button>
                         </div>
 
-                        {/* Video Player & Timewise Observations */}
+                        {/* Video Player & Timewise Observations Split Layout */}
                         {activeVideoId === c.id && activeVideoUrl && (
-                          <div style={{ margin: '1rem 0', background: '#0f172a', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
-                            <video
-                              ref={videoRef}
-                              src={activeVideoUrl}
-                              controls
-                              onLoadedMetadata={(e) => setVideoDuration(e.target.duration)}
-                              onTimeUpdate={(e) => setVideoCurrentTime(e.target.currentTime)}
-                              style={{ width: '100%', maxHeight: '380px', display: 'block' }}
-                            />
+                          <div style={{
+                            margin: '1.5rem 0',
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                            gap: '1.5rem',
+                            borderRadius: '12px',
+                            overflow: 'hidden'
+                          }}>
+                            {/* Keyframe animation and highlight utility rules */}
+                            <style dangerouslySetInnerHTML={{ __html: `
+                              @keyframes fadeInUp {
+                                from {
+                                  opacity: 0;
+                                  transform: translate(-50%, 10px);
+                                }
+                                to {
+                                  opacity: 1;
+                                  transform: translate(-50%, 0);
+                                }
+                              }
+                              .observation-card-highlight {
+                                border-color: #fbbf24 !important;
+                                background-color: rgba(251, 191, 36, 0.08) !important;
+                                box-shadow: 0 0 10px rgba(251, 191, 36, 0.25) !important;
+                                transform: scale(1.02);
+                              }
+                              @media (min-width: 992px) {
+                                .video-split-grid {
+                                  grid-template-columns: 7fr 5fr !important;
+                                }
+                              }
+                            ` }} />
 
-                            {/* Custom Interactive Timeline with Markers */}
-                            {videoDuration > 0 && (
-                              <div style={{ padding: '0.75rem 1.25rem', background: '#1e293b', borderBottom: '1px solid #334155' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#cbd5e1' }}>
-                                  <span style={{ fontWeight: '500' }}>AI Observation Markers ({c.annotations?.length || 0})</span>
-                                  <span style={{ fontFamily: 'monospace' }}>{formatTime(videoCurrentTime)} / {formatTime(videoDuration)}</span>
-                                </div>
+                            <div className="video-split-grid" style={{
+                              display: 'grid',
+                              gridTemplateColumns: '1fr',
+                              gap: '1.5rem',
+                              gridColumn: '1 / -1'
+                            }}>
+                              
+                              {/* Left Column: Video & Draggable Timeline */}
+                              <div style={{
+                                background: '#0f172a',
+                                borderRadius: '12px',
+                                border: '1px solid var(--border-color)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                overflow: 'hidden'
+                              }}>
                                 
-                                {/* Timeline Track */}
-                                <div
-                                  onClick={handleTimelineClick}
-                                  style={{
-                                    position: 'relative',
-                                    height: '8px',
-                                    background: '#475569',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    marginBottom: '0.5rem',
-                                    transition: 'height 0.2s',
-                                  }}
-                                  onMouseEnter={(e) => e.currentTarget.style.height = '12px'}
-                                  onMouseLeave={(e) => e.currentTarget.style.height = '8px'}
-                                >
-                                  {/* Progress Fill */}
-                                  <div style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    height: '100%',
-                                    width: `${(videoCurrentTime / videoDuration) * 100}%`,
-                                    background: 'linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%)',
-                                    borderRadius: '4px',
-                                    pointerEvents: 'none'
-                                  }} />
+                                {/* Video Wrapper */}
+                                <div style={{ position: 'relative', width: '100%', background: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                  <video
+                                    ref={videoRef}
+                                    src={activeVideoUrl}
+                                    controls
+                                    onLoadedMetadata={(e) => setVideoDuration(e.target.duration)}
+                                    onTimeUpdate={(e) => {
+                                      const curTime = e.target.currentTime;
+                                      setVideoCurrentTime(curTime);
+                                      
+                                      // Auto scroll active comment card in the list
+                                      if (c.annotations && c.annotations.length > 0) {
+                                        const sorted = [...c.annotations].sort((a, b) => a.timestamp_seconds - b.timestamp_seconds);
+                                        let active = null;
+                                        for (let i = 0; i < sorted.length; i++) {
+                                          const ann = sorted[i];
+                                          const nextAnn = sorted[i + 1];
+                                          const endTime = nextAnn ? nextAnn.timestamp_seconds : ann.timestamp_seconds + 6;
+                                          if (curTime >= ann.timestamp_seconds && curTime < endTime) {
+                                            active = ann;
+                                            break;
+                                          }
+                                        }
+                                        if (active) {
+                                          const el = document.getElementById(`comment-card-${active.id}`);
+                                          if (el) {
+                                            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                          }
+                                        }
+                                      }
+                                    }}
+                                    style={{ width: '100%', maxHeight: '380px', display: 'block' }}
+                                  />
 
-                                  {/* Markers */}
-                                  {c.annotations && c.annotations.map(ann => {
-                                    const pct = (ann.timestamp_seconds / videoDuration) * 100;
-                                    if (pct < 0 || pct > 100) return null;
+                                  {/* Active Comment Subtitle Overlay */}
+                                  {(() => {
+                                    const active = getActiveAnnotationForCase(c.annotations);
+                                    if (!active) return null;
                                     return (
-                                      <div
-                                        key={ann.id}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleSeekVideo(ann.timestamp_seconds);
+                                      <div style={{
+                                        position: 'absolute',
+                                        bottom: '60px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        background: 'rgba(15, 23, 42, 0.85)',
+                                        backdropFilter: 'blur(8px)',
+                                        border: '1px solid rgba(251, 191, 36, 0.4)',
+                                        borderRadius: '30px',
+                                        padding: '0.6rem 1.25rem',
+                                        color: '#ffffff',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '500',
+                                        textAlign: 'center',
+                                        maxWidth: '85%',
+                                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                                        zIndex: 10,
+                                        pointerEvents: 'none',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        animation: 'fadeInUp 0.3s ease-out',
+                                      }}>
+                                        <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>⏱️ {formatTime(active.timestamp_seconds)}:</span>
+                                        <span>{active.observation_note}</span>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+
+                                {/* Custom Draggable Timeline Progress Bar */}
+                                {videoDuration > 0 && (
+                                  <div style={{ padding: '0.75rem 1.25rem', background: '#1e293b', borderTop: '1px solid #334155' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', fontSize: '0.8rem', color: '#cbd5e1' }}>
+                                      <span style={{ fontWeight: '500' }}>AI Observation Markers ({c.annotations?.length || 0})</span>
+                                      <span style={{ fontFamily: 'monospace' }}>{formatTime(videoCurrentTime)} / {formatTime(videoDuration)}</span>
+                                    </div>
+                                    
+                                    {/* Visual Progress Timeline Container */}
+                                    <div style={{ position: 'relative', width: '100%', height: '24px', display: 'flex', alignItems: 'center' }}>
+                                      
+                                      {/* Background Track & Fill */}
+                                      <div style={{
+                                        position: 'absolute',
+                                        left: 0,
+                                        right: 0,
+                                        height: '8px',
+                                        background: '#475569',
+                                        borderRadius: '4px',
+                                        pointerEvents: 'none'
+                                      }}>
+                                        <div style={{
+                                          height: '100%',
+                                          width: `${(videoCurrentTime / videoDuration) * 100}%`,
+                                          background: 'linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%)',
+                                          borderRadius: '4px',
+                                        }} />
+                                      </div>
+
+                                      {/* Native Input Slider (Invisible, layered for dragging support) */}
+                                      <input
+                                        type="range"
+                                        min={0}
+                                        max={videoDuration}
+                                        step="0.05"
+                                        value={videoCurrentTime}
+                                        onChange={(e) => {
+                                          const val = parseFloat(e.target.value);
+                                          videoRef.current.currentTime = val;
+                                          setVideoCurrentTime(val);
                                         }}
                                         style={{
                                           position: 'absolute',
-                                          left: `${pct}%`,
-                                          top: '50%',
-                                          transform: 'translate(-50%, -50%)',
-                                          width: '12px',
-                                          height: '12px',
-                                          borderRadius: '50%',
-                                          background: '#f59e0b',
-                                          border: '2px solid #ffffff',
-                                          boxShadow: '0 0 8px rgba(245, 158, 11, 0.8)',
+                                          left: 0,
+                                          width: '100%',
+                                          height: '100%',
+                                          opacity: 0,
                                           cursor: 'pointer',
-                                          zIndex: 10,
-                                          transition: 'transform 0.15s, background-color 0.15s',
+                                          zIndex: 5,
                                         }}
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.4)';
-                                          e.currentTarget.style.backgroundColor = '#fbbf24';
-                                          const tooltip = document.getElementById(`tooltip-${ann.id}`);
-                                          if (tooltip) {
-                                            tooltip.style.opacity = '1';
-                                            tooltip.style.transform = 'translate(-50%, -100%) translateY(-8px)';
-                                          }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)';
-                                          e.currentTarget.style.backgroundColor = '#f59e0b';
-                                          const tooltip = document.getElementById(`tooltip-${ann.id}`);
-                                          if (tooltip) {
-                                            tooltip.style.opacity = '0';
-                                            tooltip.style.transform = 'translate(-50%, -100%) translateY(0px)';
-                                          }
-                                        }}
-                                      >
-                                        {/* Tooltip */}
-                                        <div
-                                          id={`tooltip-${ann.id}`}
-                                          style={{
-                                            position: 'absolute',
-                                            left: '50%',
-                                            top: 0,
-                                            transform: 'translate(-50%, -100%) translateY(0px)',
-                                            opacity: 0,
-                                            pointerEvents: 'none',
-                                            background: 'rgba(15, 23, 42, 0.95)',
-                                            backdropFilter: 'blur(4px)',
-                                            color: '#ffffff',
-                                            padding: '0.4rem 0.75rem',
-                                            borderRadius: '6px',
-                                            fontSize: '0.75rem',
-                                            whiteSpace: 'normal',
-                                            minWidth: '150px',
-                                            maxWidth: '220px',
-                                            textAlign: 'center',
-                                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                            border: '1px solid #334155',
-                                            zIndex: 100,
-                                            transition: 'opacity 0.2s, transform 0.2s',
-                                          }}
-                                        >
-                                          <div style={{ fontWeight: 'bold', color: '#fbbf24', marginBottom: '2px' }}>
-                                            {formatTime(ann.timestamp_seconds)}
+                                      />
+
+                                      {/* Visual Interactive Marker Dots */}
+                                      {c.annotations && c.annotations.map(ann => {
+                                        const pct = (ann.timestamp_seconds / videoDuration) * 100;
+                                        if (pct < 0 || pct > 100) return null;
+                                        
+                                        const activeAnn = getActiveAnnotationForCase(c.annotations);
+                                        const isActive = activeAnn && activeAnn.id === ann.id;
+                                        
+                                        return (
+                                          <div
+                                            key={ann.id}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleSeekVideo(ann.timestamp_seconds);
+                                            }}
+                                            style={{
+                                              position: 'absolute',
+                                              left: `${pct}%`,
+                                              top: '50%',
+                                              transform: 'translate(-50%, -50%)',
+                                              width: isActive ? '16px' : '12px',
+                                              height: isActive ? '16px' : '12px',
+                                              borderRadius: '50%',
+                                              background: isActive ? '#fbbf24' : '#f59e0b',
+                                              border: '2px solid #ffffff',
+                                              boxShadow: isActive ? '0 0 12px #fbbf24' : '0 0 8px rgba(245, 158, 11, 0.8)',
+                                              cursor: 'pointer',
+                                              zIndex: 10,
+                                              transition: 'transform 0.15s, background-color 0.15s, width 0.15s, height 0.15s',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                              e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1.4)';
+                                              const tooltip = document.getElementById(`tooltip-${ann.id}`);
+                                              if (tooltip) {
+                                                tooltip.style.opacity = '1';
+                                                tooltip.style.transform = 'translate(-50%, -100%) translateY(-8px)';
+                                              }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                              e.currentTarget.style.transform = 'translate(-50%, -50%) scale(1)';
+                                              const tooltip = document.getElementById(`tooltip-${ann.id}`);
+                                              if (tooltip) {
+                                                tooltip.style.opacity = '0';
+                                                tooltip.style.transform = 'translate(-50%, -100%) translateY(0px)';
+                                              }
+                                            }}
+                                          >
+                                            {/* Tooltip Popup */}
+                                            <div
+                                              id={`tooltip-${ann.id}`}
+                                              style={{
+                                                position: 'absolute',
+                                                left: '50%',
+                                                top: 0,
+                                                transform: 'translate(-50%, -100%) translateY(0px)',
+                                                opacity: 0,
+                                                pointerEvents: 'none',
+                                                background: 'rgba(15, 23, 42, 0.95)',
+                                                backdropFilter: 'blur(4px)',
+                                                color: '#ffffff',
+                                                padding: '0.4rem 0.75rem',
+                                                borderRadius: '6px',
+                                                fontSize: '0.75rem',
+                                                whiteSpace: 'normal',
+                                                minWidth: '150px',
+                                                maxWidth: '220px',
+                                                textAlign: 'center',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                                border: '1px solid #334155',
+                                                zIndex: 100,
+                                                transition: 'opacity 0.2s, transform 0.2s',
+                                              }}
+                                            >
+                                              <div style={{ fontWeight: 'bold', color: '#fbbf24', marginBottom: '2px' }}>
+                                                {formatTime(ann.timestamp_seconds)}
+                                              </div>
+                                              <div>{ann.observation_note}</div>
+                                              <div style={{
+                                                position: 'absolute',
+                                                bottom: '-6px',
+                                                left: '50%',
+                                                transform: 'translateX(-50%)',
+                                                width: 0,
+                                                height: 0,
+                                                borderLeft: '6px solid transparent',
+                                                borderRight: '6px solid transparent',
+                                                borderTop: '6px solid rgba(15, 23, 42, 0.95)',
+                                              }} />
+                                            </div>
                                           </div>
-                                          <div>{ann.observation_note}</div>
-                                          <div style={{
-                                            position: 'absolute',
-                                            bottom: '-6px',
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            width: 0,
-                                            height: 0,
-                                            borderLeft: '6px solid transparent',
-                                            borderRight: '6px solid transparent',
-                                            borderTop: '6px solid rgba(15, 23, 42, 0.95)',
-                                          }} />
-                                        </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Right Column: AI Video Observations List & Audio Transcription */}
+                              <div style={{
+                                background: '#1e293b',
+                                borderRadius: '12px',
+                                border: '1px solid #334155',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                overflow: 'hidden',
+                                maxHeight: '430px'
+                              }}>
+                                
+                                {/* Right Panel Scrollable Area */}
+                                <div style={{ padding: '1.25rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                  
+                                  {/* AI Observations List */}
+                                  <div>
+                                    <h4 style={{ fontSize: '0.95rem', color: '#38bdf8', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                      ⏱️ AI Timewise Video Observations
+                                    </h4>
+
+                                    {(!c.annotations || c.annotations.length === 0) ? (
+                                      <div style={{ fontSize: '0.825rem', color: '#94a3b8', fontStyle: 'italic', padding: '0.25rem 0' }}>
+                                        No specific timestamped video flags added yet for this recording.
                                       </div>
-                                    );
-                                  })}
+                                    ) : (
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                        {c.annotations.map(ann => {
+                                          const activeAnn = getActiveAnnotationForCase(c.annotations);
+                                          const isActive = activeAnn && activeAnn.id === ann.id;
+                                          
+                                          return (
+                                            <div
+                                              key={ann.id}
+                                              id={`comment-card-${ann.id}`}
+                                              onClick={() => handleSeekVideo(ann.timestamp_seconds)}
+                                              className={isActive ? 'observation-card-highlight' : ''}
+                                              style={{
+                                                display: 'flex',
+                                                alignItems: 'flex-start',
+                                                gap: '0.75rem',
+                                                background: '#0f172a',
+                                                padding: '0.75rem 1rem',
+                                                borderRadius: '8px',
+                                                border: '1px solid #334155',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease-in-out'
+                                              }}
+                                              onMouseEnter={(e) => {
+                                                if (!isActive) {
+                                                  e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+                                                  e.currentTarget.style.transform = 'translateY(-1px)';
+                                                }
+                                              }}
+                                              onMouseLeave={(e) => {
+                                                if (!isActive) {
+                                                  e.currentTarget.style.borderColor = '#334155';
+                                                  e.currentTarget.style.transform = 'none';
+                                                }
+                                              }}
+                                            >
+                                              <span
+                                                style={{
+                                                  background: isActive ? '#fbbf24' : '#0284c7',
+                                                  color: isActive ? '#0f172a' : '#fff',
+                                                  padding: '0.25rem 0.5rem',
+                                                  borderRadius: '6px',
+                                                  fontSize: '0.75rem',
+                                                  fontWeight: 'bold',
+                                                  whiteSpace: 'nowrap',
+                                                  display: 'inline-block'
+                                                }}
+                                              >
+                                                ▶ {formatTime(ann.timestamp_seconds)}
+                                              </span>
+                                              <span style={{ fontSize: '0.85rem', color: '#f1f5f9', lineHeight: '1.4' }}>
+                                                {ann.observation_note}
+                                              </span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Whisper Dialogue Audio Transcript */}
+                                  {c.transcription && (
+                                    <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
+                                      <h5 style={{ fontSize: '0.875rem', color: '#cbd5e1', margin: '0 0 0.75rem 0' }}>
+                                        🎙️ Timestamped Dialogue Transcript (AI Whisper)
+                                      </h5>
+                                      
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                        {c.transcription.split('\n').map((line, idx) => {
+                                          const match = line.match(/^\[([\d.]+)\]\s+\[([\d:]+)\]\s+(.+)$/);
+                                          if (!match) return <div key={idx} style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{line}</div>;
+                                          
+                                          const timestampVal = parseFloat(match[1]);
+                                          const isLineActive = Math.abs(videoCurrentTime - timestampVal) < 2;
+
+                                          return (
+                                            <div
+                                              key={idx}
+                                              onClick={() => handleSeekVideo(timestampVal)}
+                                              style={{
+                                                display: 'flex',
+                                                gap: '0.5rem',
+                                                fontSize: '0.8rem',
+                                                alignItems: 'flex-start',
+                                                cursor: 'pointer',
+                                                padding: '0.25rem',
+                                                borderRadius: '4px',
+                                                background: isLineActive ? 'rgba(56, 189, 248, 0.1)' : 'transparent',
+                                                transition: 'background 0.2s'
+                                              }}
+                                              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'}
+                                              onMouseLeave={(e) => e.currentTarget.style.background = isLineActive ? 'rgba(56, 189, 248, 0.1)' : 'transparent'}
+                                            >
+                                              <span
+                                                style={{
+                                                  background: isLineActive ? '#38bdf8' : 'rgba(56, 189, 248, 0.15)',
+                                                  color: isLineActive ? '#0f172a' : '#38bdf8',
+                                                  padding: '0.15rem 0.45rem',
+                                                  borderRadius: '4px',
+                                                  fontSize: '0.7rem',
+                                                  fontWeight: 'bold',
+                                                  whiteSpace: 'nowrap'
+                                                }}
+                                              >
+                                                {match[2]}
+                                              </span>
+                                              <span style={{ color: isLineActive ? '#ffffff' : '#cbd5e1', lineHeight: '1.4' }}>
+                                                {match[3]}
+                                              </span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                            )}
-                            
-                            {/* Timewise Psychologist Video Observations Panel */}
-                            <div style={{ background: '#1e293b', padding: '1.25rem', color: '#fff', borderTop: '1px solid #334155' }}>
-                              <h4 style={{ fontSize: '0.95rem', color: '#38bdf8', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                ⏱️ AI Timewise Video Observations
-                              </h4>
-                              
-                              {(!c.annotations || c.annotations.length === 0) ? (
-                                <div style={{ fontSize: '0.825rem', color: '#94a3b8', fontStyle: 'italic', padding: '0.25rem 0' }}>
-                                  No specific timestamped video flags added yet for this recording.
-                                </div>
-                              ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: '200px', overflowY: 'auto', paddingRight: '0.25rem' }}>
-                                  {c.annotations.map(ann => (
-                                    <div key={ann.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#0f172a', padding: '0.6rem 0.85rem', borderRadius: '8px', border: '1px solid #334155' }}>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSeekVideo(ann.timestamp_seconds)}
-                                        style={{ background: '#0284c7', color: '#fff', border: 'none', padding: '0.25rem 0.65rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                                        title="Click to jump to this moment in video"
-                                      >
-                                        ▶ {formatTime(ann.timestamp_seconds)}
-                                      </button>
-                                      <span style={{ fontSize: '0.85rem', color: '#f1f5f9' }}>{ann.observation_note}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
 
-                              {/* Timewise Audio Dialogue Transcript */}
-                              {c.transcription && (
-                                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
-                                  <h5 style={{ fontSize: '0.875rem', color: '#cbd5e1', margin: '0 0 0.5rem 0' }}>
-                                    🎙️ Timestamped Audio & Dialogue Transcript (AI Whisper)
-                                  </h5>
-                                  <div style={{ maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                    {c.transcription.split('\n').map((line, idx) => {
-                                      const match = line.match(/^\[([\d.]+)\]\s+\[([\d:]+)\]\s+(.+)$/);
-                                      if (!match) return <div key={idx} style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{line}</div>;
-                                      return (
-                                        <div key={idx} style={{ display: 'flex', gap: '0.5rem', fontSize: '0.8rem', alignItems: 'flex-start' }}>
-                                          <button
-                                            type="button"
-                                            onClick={() => handleSeekVideo(parseFloat(match[1]))}
-                                            style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', border: 'none', padding: '0.15rem 0.45rem', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}
-                                          >
-                                            {match[2]}
-                                          </button>
-                                          <span style={{ color: '#e2e8f0' }}>{match[3]}</span>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              )}
                             </div>
                           </div>
                         )}
