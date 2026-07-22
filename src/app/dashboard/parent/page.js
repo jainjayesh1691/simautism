@@ -198,6 +198,28 @@ export default function ParentDashboard() {
     }
   }, []);
 
+  const formatNotification = (n) => {
+    if (!n) return n;
+    let title = n.title;
+    let message = n.message;
+    
+    if (title === 'Case Assigned') {
+      title = 'AI Case Assigned';
+    } else if (title === 'Case Reassigned') {
+      title = 'AI Case Reassigned';
+    } else if (title === 'Observations Report Completed') {
+      title = 'AI Observations Completed';
+    }
+    
+    if (message) {
+      message = message.replace(/assigned to\s+.+?(\.|\s*$)/i, 'assigned to AI Evaluator.');
+      message = message.replace(/reassigned to\s+.+?(\.|\s*$)/i, 'reassigned to AI Evaluator.');
+      message = message.replace(/The psychologist has/gi, 'AI Evaluator has');
+    }
+    
+    return { ...n, title, message };
+  };
+
   const fetchAllNotifications = useCallback(async (profileId) => {
     try {
       const { data, error } = await supabase
@@ -207,7 +229,7 @@ export default function ParentDashboard() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setNotifications(data || []);
+      setNotifications((data || []).map(formatNotification));
     } catch (err) {
       console.error('Error fetching notifications:', err);
     }

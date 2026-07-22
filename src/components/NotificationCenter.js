@@ -8,6 +8,28 @@ export default function NotificationCenter({ profileId, onViewAll }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  const formatNotification = (n) => {
+    if (!n) return n;
+    let title = n.title;
+    let message = n.message;
+    
+    if (title === 'Case Assigned') {
+      title = 'AI Case Assigned';
+    } else if (title === 'Case Reassigned') {
+      title = 'AI Case Reassigned';
+    } else if (title === 'Observations Report Completed') {
+      title = 'AI Observations Completed';
+    }
+    
+    if (message) {
+      message = message.replace(/assigned to\s+.+?(\.|\s*$)/i, 'assigned to AI Evaluator.');
+      message = message.replace(/reassigned to\s+.+?(\.|\s*$)/i, 'reassigned to AI Evaluator.');
+      message = message.replace(/The psychologist has/gi, 'AI Evaluator has');
+    }
+    
+    return { ...n, title, message };
+  };
+
   const fetchNotifications = useCallback(async () => {
     if (!profileId) return;
     try {
@@ -19,7 +41,7 @@ export default function NotificationCenter({ profileId, onViewAll }) {
         .limit(8); // Show last 8 in dropdown
 
       if (error) throw error;
-      setNotifications(data || []);
+      setNotifications((data || []).map(formatNotification));
     } catch (err) {
       console.error('Error fetching notifications:', err);
     }
@@ -41,7 +63,7 @@ export default function NotificationCenter({ profileId, onViewAll }) {
         },
         (payload) => {
           // Prepend new notification
-          setNotifications(prev => [payload.new, ...prev]);
+          setNotifications(prev => [formatNotification(payload.new), ...prev]);
         }
       )
       .subscribe();
