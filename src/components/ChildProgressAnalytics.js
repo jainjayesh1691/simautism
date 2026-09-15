@@ -23,6 +23,8 @@ export default function ChildProgressAnalytics({
 
   const selectedChildId = externalChildId !== null ? externalChildId : internalSelectedChildId;
 
+  const safeChildProfiles = Array.isArray(childProfiles) ? childProfiles : [];
+
   // Filter cases relevant to the selected child / profile
   const filteredCases = useMemo(() => {
     let list = Array.isArray(cases) ? [...cases] : [];
@@ -31,7 +33,7 @@ export default function ChildProgressAnalytics({
     if (selectedChildId && selectedChildId !== 'ALL') {
       list = list.filter(c => 
         String(c.child_profile_id) === String(selectedChildId) ||
-        (c.child_name && childProfiles.find(p => String(p.id) === String(selectedChildId))?.child_name?.toLowerCase() === c.child_name.toLowerCase())
+        (c.child_name && safeChildProfiles.find(p => String(p.id) === String(selectedChildId))?.child_name?.toLowerCase() === c.child_name.toLowerCase())
       );
     }
 
@@ -50,13 +52,13 @@ export default function ChildProgressAnalytics({
     }
 
     return list;
-  }, [cases, selectedChildId, childProfiles, timeFilter]);
+  }, [cases, selectedChildId, safeChildProfiles, timeFilter]);
 
   // Selected child metadata
   const currentChildProfile = useMemo(() => {
     if (!selectedChildId || selectedChildId === 'ALL') return null;
-    return childProfiles.find(p => String(p.id) === String(selectedChildId)) || null;
-  }, [selectedChildId, childProfiles]);
+    return safeChildProfiles.find(p => String(p.id) === String(selectedChildId)) || null;
+  }, [selectedChildId, safeChildProfiles]);
 
   // Derived progress statistics & comparison metrics
   const stats = useMemo(() => {
@@ -84,8 +86,9 @@ export default function ChildProgressAnalytics({
     }
 
     const latestCase = filteredCases[filteredCases.length - 1];
-    const latestTime = latestCase.created_at ? new Date(latestCase.created_at).getTime() : 0;
-    const earliestTime = earliestCase.created_at ? new Date(earliestCase.created_at).getTime() : 0;
+    const earliestCase = filteredCases[0];
+    const latestTime = latestCase?.created_at ? new Date(latestCase.created_at).getTime() : 0;
+    const earliestTime = earliestCase?.created_at ? new Date(earliestCase.created_at).getTime() : 0;
     const daysTracked = Math.max(1, Math.round((latestTime - earliestTime) / (1000 * 60 * 60 * 24)));
 
     // Risk calculation helper
