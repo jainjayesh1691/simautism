@@ -1016,9 +1016,9 @@ export default function PsychologistDashboard() {
           {activeTab === 'child_progress' && (
             <ChildProgressAnalytics
               role="psychologist"
-              user={user}
+              user={profile}
               cases={cases}
-              childProfiles={Array.from(new Set(cases.map(c => c.child_name).filter(Boolean))).map((name, idx) => ({ id: idx + 1, child_name: name }))}
+              childProfiles={Array.from(new Set((cases || []).map(c => c.child_name).filter(Boolean))).map((name, idx) => ({ id: idx + 1, child_name: name }))}
             />
           )}
 
