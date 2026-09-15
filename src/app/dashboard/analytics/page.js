@@ -66,32 +66,32 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0f172a', color: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <div style={{ minHeight: '100vh', background: '#f8fafc', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', marginBottom: '1rem', animation: 'spin 1s infinite linear' }}>⏳</div>
-          <p style={{ color: '#94a3b8' }}>Loading Child Progress & Analytics Dashboard...</p>
+          <p style={{ color: '#475569', fontWeight: 600 }}>Loading Child Progress & Analytics Dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#090d16', color: '#f8fafc', fontFamily: 'Inter, system-ui, sans-serif', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: '#f8fafc', color: '#0f172a', fontFamily: 'Inter, system-ui, sans-serif', padding: '24px' }}>
       {/* Top Navbar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', background: '#0f172a', padding: '16px 24px', borderRadius: '14px', border: '1px solid #1e293b' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', background: '#ffffff', padding: '16px 24px', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
             onClick={() => router.push(role === 'admin' ? '/admin/dashboard' : role === 'psychologist' ? '/dashboard/psychologist' : '/dashboard/parent')}
-            style={{ background: '#1e293b', color: '#94a3b8', border: '1px solid #334155', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+            style={{ background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px 14px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700 }}
           >
             ← Back to Dashboard
           </button>
           <div>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: '#f8fafc' }}>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#0f172a' }}>
               Reporting & Analytics Hub
             </h1>
             <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
-              Logitudinal child progress tracking & evaluation report generator
+              Longitudinal child progress tracking & evaluation report generator
             </p>
           </div>
         </div>
@@ -99,8 +99,8 @@ export default function AnalyticsPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <NotificationCenter user={user} role={role} />
           <div style={{ textAlign: 'right', fontSize: '0.8rem' }}>
-            <div style={{ fontWeight: 600, color: '#f8fafc' }}>{user?.email}</div>
-            <div style={{ color: '#60a5fa', textTransform: 'capitalize' }}>Role: {role}</div>
+            <div style={{ fontWeight: 700, color: '#0f172a' }}>{user?.email}</div>
+            <div style={{ color: '#16a34a', textTransform: 'capitalize', fontWeight: 700 }}>Role: {role}</div>
           </div>
         </div>
       </div>
