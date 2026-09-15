@@ -79,8 +79,8 @@ export default function Login() {
       }
     } catch (err) {
       let errMsg = err.message || 'An error occurred during login.';
-      if (errMsg === '{}') {
-        errMsg = 'Invalid email or password. Please verify your credentials.';
+      if (errMsg === '{}' || err.name === 'AuthRetryableFetchError' || err.status === 500) {
+        errMsg = 'Account profile configuration issue. Please delete and re-register this email from the Admin Dashboard using "User / Parent" role.';
       }
       setError(errMsg);
     } finally {
