@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import NotificationCenter from '@/components/NotificationCenter';
+import ChildProgressAnalytics from '@/components/ChildProgressAnalytics';
 
 // M-CHAT-R 10-Question Checklist
 const MCHAT_QUESTIONS = [
@@ -1279,6 +1280,16 @@ export default function AdminDashboard() {
                     })}
                   </svg>
                 </div>
+              </div>
+
+              {/* Master Child Progress & Longitudinal Analytics Section */}
+              <div style={{ marginTop: '2.5rem' }}>
+                <ChildProgressAnalytics
+                  role="admin"
+                  user={user}
+                  cases={cases}
+                  childProfiles={Array.from(new Set(cases.map(c => c.child_name).filter(Boolean))).map((name, idx) => ({ id: idx + 1, child_name: name }))}
+                />
               </div>
             </div>
           )}

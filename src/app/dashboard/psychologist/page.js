@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import NotificationCenter from '@/components/NotificationCenter';
+import ChildProgressAnalytics from '@/components/ChildProgressAnalytics';
 
 // M-CHAT-R 10-Question Checklist
 const MCHAT_QUESTIONS = [
@@ -641,6 +642,7 @@ export default function PsychologistDashboard() {
   const getTabTitle = () => {
     switch (activeTab) {
       case 'cases': return 'Assigned Cases Assessment';
+      case 'child_progress': return 'Child Longitudinal Progress & Analytics';
       case 'profile': return 'Clinical Profile Settings';
       case 'security': return 'Security Settings';
       case 'notifications': return 'All Notifications';
@@ -738,6 +740,13 @@ export default function PsychologistDashboard() {
             id="tab-cases"
           >
             📂 Assigned Cases
+          </button>
+
+          <button
+            className={`sidebar-link ${activeTab === 'child_progress' ? 'active' : ''}`}
+            onClick={() => setActiveTab('child_progress')}
+          >
+            📈 Child Progress Tracking
           </button>
           
           <button
@@ -1001,6 +1010,16 @@ export default function PsychologistDashboard() {
 
               </div>
             </div>
+          )}
+
+          {/* Child Progress Analytics Tab */}
+          {activeTab === 'child_progress' && (
+            <ChildProgressAnalytics
+              role="psychologist"
+              user={user}
+              cases={cases}
+              childProfiles={Array.from(new Set(cases.map(c => c.child_name).filter(Boolean))).map((name, idx) => ({ id: idx + 1, child_name: name }))}
+            />
           )}
 
           {/* Assigned Cases Tab */}

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import NotificationCenter from '@/components/NotificationCenter';
+import ChildProgressAnalytics from '@/components/ChildProgressAnalytics';
 
 // M-CHAT-R 10-Question Checklist
 const MCHAT_QUESTIONS = [
@@ -1003,6 +1004,7 @@ export default function ParentDashboard() {
     switch (activeTab) {
       case 'submit': return 'Submit Case (Step ' + submitStep + ' of 3)';
       case 'children': return 'Registered Children Profiles';
+      case 'analytics': return 'Child Progress & Analytics';
       case 'profile': return 'My Profile Information';
       case 'security': return 'Security & Password';
       case 'notifications': return 'All Notifications';
@@ -1044,6 +1046,13 @@ export default function ParentDashboard() {
             onClick={() => setActiveTab('children')}
           >
             👶 Child Profiles
+          </button>
+
+          <button
+            className={`sidebar-link ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            📈 Progress & Analytics
           </button>
 
           <button
@@ -1884,6 +1893,16 @@ export default function ParentDashboard() {
                 )}
               </div>
             </div>
+          )}
+
+          {/* Progress & Analytics Tab */}
+          {activeTab === 'analytics' && (
+            <ChildProgressAnalytics
+              role="parent"
+              user={user}
+              childProfiles={childProfiles}
+              cases={cases}
+            />
           )}
 
           {/* Child Profiles Tab */}
