@@ -624,74 +624,134 @@ export default function AdminDashboard() {
         '1. Continue positive home environment and interactive play.'
       ];
 
+      // Find active psychologist or admin profile for assigned_psychologist_id/psychologist_id
+      let assignedPsychId = profile.id;
+      try {
+        const { data: psych } = await supabase
+          .from('profiles')
+          .select('id')
+          .in('role', ['psychologist', 'admin'])
+          .eq('status', 'active')
+          .limit(1)
+          .maybeSingle();
+        if (psych?.id) assignedPsychId = psych.id;
+      } catch (e) {
+        console.warn('Could not query psychologist profile, using current user id:', e);
+      }
+
       let count = 0;
       for (let i = 0; i < SEED_20_ITEMS.length; i++) {
-        const item = SEED_20_ITEMS[i];
-        
-        // 1. Create Child Profile
-        const { data: cpData } = await supabase
-          .from('child_profiles')
-          .insert({
-            user_id: profile.id,
-            name: item.name,
-            gender: item.gender,
-            developmental_history: item.history
-          })
-          .select()
-          .maybeSingle();
-
-        const childProfileId = cpData?.id || null;
-
-        // 2. Create Child Case
-        const { data: caseData } = await supabase
-          .from('child_cases')
-          .insert({
-            user_id: profile.id,
-            child_name: item.name,
-            child_age: item.age,
-            child_gender: item.gender,
-            notes_from_parent: 'Parent observation video uploaded for AI assessment.',
-            child_history: item.history,
-            video_path: 'demo_video.mp4',
-            status: 'completed',
-            consent_given: true,
-            mchat_score: item.score,
-            mchat_responses: {
-              '1': item.score >= 4 ? 'No' : 'Yes',
-              '2': item.score >= 7 ? 'Yes' : 'No',
-              '3': item.score >= 5 ? 'No' : 'Yes',
-              '4': 'Yes',
-              '5': item.score >= 6 ? 'Yes' : 'No',
-              '6': item.score >= 4 ? 'No' : 'Yes',
-              '7': item.score >= 5 ? 'No' : 'Yes',
-              '8': item.score >= 3 ? 'No' : 'Yes',
-              '9': item.score >= 4 ? 'No' : 'Yes',
-              '10': item.score >= 5 ? 'No' : 'Yes'
-            },
-            child_profile_id: childProfileId,
-            assigned_psychologist_id: profile.id
-          })
-          .select()
-          .maybeSingle();
-
-        if (caseData) {
-          // 3. Create AI Review
-          await supabase
-            .from('psychologist_reviews')
+        try {
+          const item = SEED_20_ITEMS[i];
+          const dobDate = new Date(Date.now() - Math.round(item.age * 365.25) * 24 * 60 * 60 * 1000);
+          const dobString = dobDate.toISOString().split('T')[0];
+          
+          // 1. Create Child Profile
+          const { data: cpData, error: cpErr } = await supabase
+            .from('child_profiles')
             .insert({
-              case_id: caseData.id,
-              psychologist_id: profile.id,
-              observations: obsList[i],
-              audit_notes: 'AI Analysis Pipeline v2.4 initialized. Neural network evaluation completed.',
-              review_summary: summaryList[i],
-              recommendations: recsList[i],
-              status: 'completed',
-              joint_attention: item.joint,
-              motor_repetitions: item.motor,
-              eye_contact: item.eye
-            });
+              user_id: profile.id,
+              name: item.name,
+              date_of_birth: dobString,
+              gender: item.gender,
+              developmental_history: item.history
+            })
+            .select()
+            .maybeSingle();
 
-          count++;
+          if (cpErr) {
+            console.warn(`[Admin Seed Item ${i + 1}] child_profiles insert error:`, cpErr);
+          }
+
+          const childProfileId = cpData?.id || null;
+
+          // 2. Create Child Case
+          const { data: caseData, error: caseErr } = await supabase
+            .from('child_cases')
+            .insert({
+              user_id: profile.id,
+              child_name: item.name,
+              child_age: item.age,
+              child_gender: item.gender,
+              notes_from_parent: 'Parent observation video uploaded for AI assessment.',
+              child_history: item.history,
+              video_path: 'demo_video.mp4',
+              status: 'completed',
+              consent_given: true,
+              mchat_score: item.score,
+              mchat_responses: {
+                '1': item.score >= 4 ? 'No' : 'Yes',
+                '2': item.score >= 7 ? 'Yes' : 'No',
+                '3': item.score >= 5 ? 'No' : 'Yes',
+                '4': 'Yes',
+                '5': item.score >= 6 ? 'Yes' : 'No',
+                '6': item.score >= 4 ? 'No' : 'Yes',
+                '7': item.score >= 5 ? 'No' : 'Yes',
+                '8': item.score >= 3 ? 'No' : 'Yes',
+                '9': item.score >= 4 ? 'No' : 'Yes',
+                '10': item.score >= 5 ? 'No' : 'Yes'
+              },
+              child_profile_id: childProfileId,
+              assigned_psychologist_id: assignedPsychId
+            })
+            .select()
+            .maybeSingle();
+
+          if (caseErr) {
+            console.warn(`[Admin Seed Item ${i + 1}] child_cases insert error:`, caseErr);
+            continue;
+          }
+
+          if (caseData) {
+            // 3. Create AI Review
+            try {
+              const { error: revErr } = await supabase
+                .from('psychologist_reviews')
+                .insert({
+                  case_id: caseData.id,
+                  psychologist_id: assignedPsychId,
+                  observations: obsList[i],
+                  audit_notes: 'AI Analysis Pipeline v2.4 initialized. Neural network evaluation completed.',
+                  review_summary: summaryList[i],
+                  recommendations: recsList[i],
+                  status: 'completed',
+                  joint_attention: item.joint,
+                  motor_repetitions: item.motor,
+                  eye_contact: item.eye
+                });
+              if (revErr) {
+                console.warn(`[Admin Seed Item ${i + 1}] psychologist_reviews insert error:`, revErr);
+              }
+            } catch (rErr) {
+              console.warn(`[Admin Seed Item ${i + 1}] psychologist_reviews exception:`, rErr);
+            }
+
+            // 4. Create Video Annotations
+            try {
+              await supabase.from('video_annotations').insert([
+                { case_id: caseData.id, timestamp_seconds: 12, annotation_text: 'AI Marker 00:12 - Joint attention prompt response evaluated', category: 'Social Interaction' },
+                { case_id: caseData.id, timestamp_seconds: 45, annotation_text: 'AI Marker 00:45 - Motor movement & eye gaze vector recorded', category: 'Eye Contact' }
+              ]);
+            } catch (aErr) {
+              // ignore annotation errors
+            }
+
+            // 5. Create Notification
+            try {
+              await supabase.from('notifications').insert({
+                user_id: profile.id,
+                title: 'AI Observations Completed',
+                message: `AI Evaluator report for ${item.name} is now completed and available for review.`,
+                is_read: false
+              });
+            } catch (nErr) {
+              // ignore notification errors
+            }
+
+            count++;
+          }
+        } catch (itemErr) {
+          console.error(`[Admin Seed Item ${i + 1}] Unexpected loop item error:`, itemErr);
         }
       }
 

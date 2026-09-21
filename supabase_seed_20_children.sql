@@ -166,19 +166,28 @@ DECLARE
   i integer;
 BEGIN
   -- 1. Resolve or fall back to an active parent profile
-  IF v_parent_id IS NULL THEN
+  IF v_parent_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = v_parent_id) THEN
+    SELECT id INTO v_parent_id FROM public.profiles WHERE auth_user_id = v_parent_id LIMIT 1;
+  END IF;
+
+  IF v_parent_id IS NULL OR NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = v_parent_id) THEN
     SELECT id INTO v_parent_id FROM public.profiles WHERE role = 'user' AND status = 'active' LIMIT 1;
   END IF;
 
-  -- If still null, try finding any profile
-  IF v_parent_id IS NULL THEN
+  IF v_parent_id IS NULL OR NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = v_parent_id) THEN
     SELECT id INTO v_parent_id FROM public.profiles LIMIT 1;
   END IF;
 
   -- 2. Resolve or fall back to a psychologist profile
   SELECT id INTO v_psychologist_id FROM public.profiles WHERE role = 'psychologist' AND status = 'active' LIMIT 1;
   IF v_psychologist_id IS NULL THEN
+    SELECT id INTO v_psychologist_id FROM public.profiles WHERE role = 'psychologist' LIMIT 1;
+  END IF;
+  IF v_psychologist_id IS NULL THEN
     SELECT id INTO v_psychologist_id FROM public.profiles WHERE role = 'admin' AND status = 'active' LIMIT 1;
+  END IF;
+  IF v_psychologist_id IS NULL THEN
+    SELECT id INTO v_psychologist_id FROM public.profiles LIMIT 1;
   END IF;
   IF v_psychologist_id IS NULL THEN
     v_psychologist_id := v_parent_id;
