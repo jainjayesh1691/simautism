@@ -1,5 +1,5 @@
 -- ====================================================================
--- SIM-AUTISM: Seed 20 Child Records with AI Clinical Reviews
+-- AUTISMSTEP: Seed 20 Child Records with AI Clinical Reviews
 -- 
 -- Run this SQL in your Supabase SQL Editor:
 -- https://supabase.com/dashboard/project/rywknbtrnhjfsavcwdbx/sql/new

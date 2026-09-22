@@ -9,7 +9,7 @@ export default function Home() {
       <header className="navbar">
         <div className="logo-section">
           <div className="logo-icon">🧩</div>
-          <span className="logo-text">SimAutism</span>
+          <span className="logo-text">AutismStep</span>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <Link href="/login" className="btn btn-outline" style={{ padding: '0.5rem 1.25rem', fontSize: '0.9rem' }}>
@@ -109,7 +109,7 @@ export default function Home() {
         <section style={{ marginBottom: '5rem' }}>
           <h2 style={{ textAlign: 'center', fontSize: '2.25rem', marginBottom: '1rem' }}>Tailored Portals for Collaborative Care</h2>
           <p style={{ textAlign: 'center', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 3rem auto' }}>
-            SimAutism bridges the gap between home observations and clinical assessments through a secure digital workflow.
+            AutismStep bridges the gap between home observations and clinical assessments through a secure digital workflow.
           </p>
           
           <div style={{
@@ -230,7 +230,7 @@ export default function Home() {
         gap: '1.5rem'
       }}>
         <div>
-          <div style={{ fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>🧩 SimAutism Assessment Portal</div>
+          <div style={{ fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>🧩 AutismStep Assessment Portal</div>
           <p style={{ fontSize: '0.825rem' }}>Connecting clinical observation and supportive guidance safely.</p>
         </div>
         <div style={{ display: 'flex', gap: '2rem' }}>

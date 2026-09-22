@@ -273,7 +273,7 @@ export default function ChildProgressAnalytics({
       <div className="print-header" style={{ display: 'none', borderBottom: '2px solid #000', paddingBottom: '16px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ fontSize: '20pt', margin: 0, color: '#000000' }}>SIM-AUTISM Clinical Progress & Analytics Report</h1>
+            <h1 style={{ fontSize: '20pt', margin: 0, color: '#000000' }}>AUTISMSTEP Clinical Progress & Analytics Report</h1>
             <p style={{ margin: '4px 0 0 0', fontSize: '10pt', color: '#475569' }}>Automated Screening & Longitudinal Developmental Tracking Platform</p>
           </div>
           <div style={{ textAlign: 'right', fontSize: '9pt', color: '#475569' }}>
@@ -728,7 +728,7 @@ export default function ChildProgressAnalytics({
           <div>
             <p style={{ margin: 0, fontWeight: 'bold' }}>Parent / Guardian Verification:</p>
             <div style={{ marginTop: '40px', borderBottom: '1px solid #000', width: '220px' }}></div>
-            <p style={{ margin: '4px 0 0 0', fontSize: '8pt', color: '#475569' }}>SIM-AUTISM Platform Confirmation</p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '8pt', color: '#475569' }}>AutismStep Platform Confirmation</p>
           </div>
         </div>
       </div>

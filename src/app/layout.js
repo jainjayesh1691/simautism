@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Autism Video Review Platform",
+  title: "AutismStep - Video Review Platform",
   description: "Secure, professional observation and psychologist review platform for early child development assessment.",
 };
 

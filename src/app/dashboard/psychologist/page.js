@@ -722,7 +722,7 @@ export default function PsychologistDashboard() {
         {/* Brand */}
         <div className="sidebar-brand logo-section">
           <div className="logo-icon">🧩</div>
-          <div className="logo-text">SimAutism</div>
+          <div className="logo-text">AutismStep</div>
         </div>
 
         {/* Navigation links */}

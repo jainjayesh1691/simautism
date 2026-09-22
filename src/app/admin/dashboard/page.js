@@ -1221,7 +1221,7 @@ export default function AdminDashboard() {
         {/* Brand */}
         <div className="sidebar-brand logo-section">
           <div className="logo-icon" style={{ background: 'linear-gradient(135deg, #059669 0%, #0d9488 100%)' }}>🧩</div>
-          <div className="logo-text">SimAutism <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>ADMIN</span></div>
+          <div className="logo-text">AutismStep <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>ADMIN</span></div>
         </div>
 
         {/* Navigation List */}

@@ -796,7 +796,7 @@ export default function ParentDashboard() {
         </head>
         <body>
           <div class="header-bar">
-            <div class="brand">🧩 SimAutism</div>
+            <div class="brand">🧩 AutismStep</div>
             <div class="no-print">
               <button onclick="window.print();" style="background:#059669;color:#fff;border:none;padding:0.5rem 1rem;font-weight:600;border-radius:4px;cursor:pointer;">Print / Save PDF</button>
             </div>
@@ -1286,7 +1286,7 @@ export default function ParentDashboard() {
         {/* Brand */}
         <div className="sidebar-brand logo-section">
           <div className="logo-icon">🧩</div>
-          <div className="logo-text">SimAutism</div>
+          <div className="logo-text">AutismStep</div>
         </div>
 
         {/* Navigation List */}
@@ -2367,7 +2367,7 @@ export default function ParentDashboard() {
                   <div>
                     <h3 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Digital Consent & Data Agreement</h3>
                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '1.25rem' }}>
-                      SimAutism uses private storage to host developmental clinical video reviews. In accordance with health data compliance rules, please verify and consent to the terms below before submitting your video files:
+                      AutismStep uses private storage to host developmental clinical video reviews. In accordance with health data compliance rules, please verify and consent to the terms below before submitting your video files:
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>

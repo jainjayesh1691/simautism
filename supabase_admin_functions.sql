@@ -1,5 +1,5 @@
 -- ====================================================================
--- SIM-AUTISM: Admin Management Database Functions (Migration SQL)
+-- AUTISMSTEP: Admin Management Database Functions (Migration SQL)
 -- 
 -- Run this script in your Supabase SQL Editor:
 -- https://supabase.com/dashboard/project/rywknbtrnhjfsavcwdbx/sql/new
