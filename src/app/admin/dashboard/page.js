@@ -766,6 +766,28 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAssignAutismVideos = async () => {
+    setSeedingLoading(true);
+    setSeedingMessage({ text: '⚡ Assigning autism observation videos & text descriptions to all missing children...', type: 'info' });
+
+    try {
+      const { data, error } = await supabase.rpc('assign_autism_videos_to_missing_children');
+      if (error) throw error;
+
+      setSeedingMessage({
+        text: `✅ Successfully assigned autism videos & text! (Created: ${data?.cases_created || 0} cases, Updated: ${data?.cases_updated || 0} cases, Annotations: ${data?.annotations_created || 0})`,
+        type: 'success'
+      });
+      await loadData(profile.id);
+    } catch (err) {
+      console.error('Failed to assign autism videos:', err);
+      setSeedingMessage({ text: `Error assigning videos: ${err.message}`, type: 'error' });
+    } finally {
+      setSeedingLoading(false);
+      setTimeout(() => setSeedingMessage({ text: '', type: '' }), 8000);
+    }
+  };
+
   const handleCreateAccount = async (e) => {
     e.preventDefault();
     setAccountActionLoading(true);
@@ -1839,7 +1861,17 @@ export default function AdminDashboard() {
 
               {/* Cases List */}
               <section className="card" style={{ padding: '1.25rem' }}>
-                <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>All Video Review Cases ({totalCases})</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <h2 style={{ fontSize: '1.25rem', margin: 0 }}>All Video Review Cases ({totalCases})</h2>
+                  <button
+                    onClick={handleAssignAutismVideos}
+                    className="btn btn-primary"
+                    style={{ padding: '0.45rem 0.9rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                    disabled={seedingLoading}
+                  >
+                    🎬 {seedingLoading ? 'Assigning Videos...' : 'Assign Autism Videos to All Unassigned Children'}
+                  </button>
+                </div>
                 
                 {totalCases === 0 ? (
                   <p style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-secondary)' }}>No child cases uploaded yet.</p>
