@@ -533,26 +533,26 @@ export default function AdminDashboard() {
 
       // Fallback Batch JS Insert if RPC function not created in SQL editor
       const SEED_20_ITEMS = [
-        { name: 'Liam Smith', age: 2.5, gender: 'Male', score: 5, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Mild speech delay noted at 24 months. Shows high interest in mechanical wheels and spinning objects.' },
-        { name: 'Sophia Chen', age: 3.0, gender: 'Female', score: 1, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Developmental milestones on track. Parent requested routine developmental screening.' },
-        { name: 'Noah Patel', age: 1.8, gender: 'Male', score: 8, joint: 'Absent', motor: 'Severe', eye: 'Poor', history: 'Limited babbling, does not respond reliably to name when called across room. Shows hand-flapping during excitement.' },
-        { name: 'Ava Johnson', age: 4.2, gender: 'Female', score: 2, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Social and expressive communication normal. Enjoys peer play at daycare.' },
-        { name: 'Ethan Garcia', age: 2.0, gender: 'Male', score: 9, joint: 'Absent', motor: 'Severe', eye: 'Poor', history: 'Significant social communication delay. Minimal eye contact and repetitive toe-walking noted.' },
-        { name: 'Emma Davis', age: 3.5, gender: 'Female', score: 4, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Occasionally hyper-focused on toys, mild delay in multi-word sentence formation.' },
-        { name: 'Mason Miller', age: 2.8, gender: 'Male', score: 7, joint: 'Absent', motor: 'Moderate', eye: 'Poor', history: 'Parent reports concern regarding sudden sensory overload in loud environments and intense alignment of toy cars.' },
-        { name: 'Isabella Wilson', age: 4.0, gender: 'Female', score: 0, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'No clinical concerns reported. Receptive and expressive language age-appropriate.' },
-        { name: 'Lucas Martinez', age: 2.2, gender: 'Male', score: 6, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Struggles with transitions between activities. Displays frustration and reduced gesture use.' },
-        { name: 'Mia Taylor', age: 1.5, gender: 'Female', score: 8, joint: 'Absent', motor: 'Severe', eye: 'Poor', history: 'Early identification referral. Does not follow pointing gestures or share enjoyment with caregivers.' },
-        { name: 'Alexander Anderson', age: 3.8, gender: 'Male', score: 1, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Fluent vocabulary, inquisitive play, no repetitive behaviors observed.' },
-        { name: 'Charlotte Thomas', age: 2.7, gender: 'Female', score: 9, joint: 'Absent', motor: 'Severe', eye: 'Poor', history: 'Marked difficulty maintaining social gaze during interactive peek-a-boo games.' },
-        { name: 'Henry Jackson', age: 4.5, gender: 'Male', score: 4, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Mild delay in reciprocal conversation; good motor skills and curious exploratory play.' },
-        { name: 'Amelia White', age: 2.1, gender: 'Female', score: 2, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Active, highly responsive to caregiver cues, strong pointing gestures.' },
-        { name: 'Oliver Harris', age: 3.2, gender: 'Male', score: 8, joint: 'Absent', motor: 'Moderate', eye: 'Poor', history: 'Reduced engagement with peers, prefers isolated object manipulation and repetitive finger wiggling.' },
-        { name: 'Harper Martin', age: 1.9, gender: 'Female', score: 5, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Exhibits inconsistent response to auditory stimuli; hearing test confirmed normal.' },
-        { name: 'Benjamin Thompson', age: 4.8, gender: 'Male', score: 1, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Advanced verbal skills, highly interactive with siblings and adults.' },
-        { name: 'Evelyn Moore', age: 2.4, gender: 'Female', score: 7, joint: 'Absent', motor: 'Moderate', eye: 'Poor', history: 'Frequent repetitive arm flapping during joy or distress; slow response to social cues.' },
-        { name: 'James Young', age: 3.1, gender: 'Male', score: 4, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Mild difficulty maintaining eye contact during structured clinical tasks.' },
-        { name: 'Emily Allen', age: 2.9, gender: 'Female', score: 2, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Meets all key motor and communication benchmarks for 34 months.' }
+        { name: 'Tan Wei Jie', age: 2.5, gender: 'Male', score: 5, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Mild speech delay noted at 24 months. Shows high interest in mechanical wheels and spinning objects.' },
+        { name: 'Sophia Chen Xuan Ting', age: 3.0, gender: 'Female', score: 1, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Developmental milestones on track. Parent requested routine developmental screening.' },
+        { name: 'Muhammad Rayyan', age: 1.8, gender: 'Male', score: 8, joint: 'Absent', motor: 'Severe', eye: 'Poor', history: 'Limited babbling, does not respond reliably to name when called across room. Shows hand-flapping during excitement.' },
+        { name: 'Chloe Lim Jia En', age: 4.2, gender: 'Female', score: 2, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Social and expressive communication normal. Enjoys peer play at daycare.' },
+        { name: 'Ethan Yeo Jun Kai', age: 2.0, gender: 'Male', score: 9, joint: 'Absent', motor: 'Severe', eye: 'Poor', history: 'Significant social communication delay. Minimal eye contact and repetitive toe-walking noted.' },
+        { name: 'Nur Aisyah Binte Ahmad', age: 3.5, gender: 'Female', score: 4, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Occasionally hyper-focused on toys, mild delay in multi-word sentence formation.' },
+        { name: 'Lucas Koh En Xiu', age: 2.8, gender: 'Male', score: 7, joint: 'Absent', motor: 'Moderate', eye: 'Poor', history: 'Parent reports concern regarding sudden sensory overload in loud environments and intense alignment of toy cars.' },
+        { name: 'Isabella Teo Rui Ying', age: 4.0, gender: 'Female', score: 0, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'No clinical concerns reported. Receptive and expressive language age-appropriate.' },
+        { name: 'Kavien Kumar', age: 2.2, gender: 'Male', score: 6, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Struggles with transitions between activities. Displays frustration and reduced gesture use.' },
+        { name: 'Hannah Ng Zi Qing', age: 1.5, gender: 'Female', score: 8, joint: 'Absent', motor: 'Severe', eye: 'Poor', history: 'Early identification referral. Does not follow pointing gestures or share enjoyment with caregivers.' },
+        { name: 'Alexander Lee Zi Hao', age: 3.8, gender: 'Male', score: 1, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Fluent vocabulary, inquisitive play, no repetitive behaviors observed.' },
+        { name: 'Charlotte Wong Mei Ling', age: 2.7, gender: 'Female', score: 9, joint: 'Absent', motor: 'Severe', eye: 'Poor', history: 'Marked difficulty maintaining social gaze during interactive peek-a-boo games.' },
+        { name: 'Muhammad Irfan', age: 4.5, gender: 'Male', score: 4, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Mild delay in reciprocal conversation; good motor skills and curious exploratory play.' },
+        { name: 'Amelia Goh En Xi', age: 2.1, gender: 'Female', score: 2, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Active, highly responsive to caregiver cues, strong pointing gestures.' },
+        { name: 'Oliver Tay Min Han', age: 3.2, gender: 'Male', score: 8, joint: 'Absent', motor: 'Moderate', eye: 'Poor', history: 'Reduced engagement with peers, prefers isolated object manipulation and repetitive finger wiggling.' },
+        { name: 'Harper Tan Xuan Yi', age: 1.9, gender: 'Female', score: 5, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Exhibits inconsistent response to auditory stimuli; hearing test confirmed normal.' },
+        { name: 'Benjamin Chua Kai Xiang', age: 4.8, gender: 'Male', score: 1, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Advanced verbal skills, highly interactive with siblings and adults.' },
+        { name: 'Priya Ramesh', age: 2.4, gender: 'Female', score: 7, joint: 'Absent', motor: 'Moderate', eye: 'Poor', history: 'Frequent repetitive arm flapping during joy or distress; slow response to social cues.' },
+        { name: 'James De Cruz', age: 3.1, gender: 'Male', score: 4, joint: 'Inconsistent', motor: 'Mild', eye: 'Reduced', history: 'Mild difficulty maintaining eye contact during structured clinical tasks.' },
+        { name: 'Emily Ho Jie Ying', age: 2.9, gender: 'Female', score: 2, joint: 'Consistent', motor: 'None', eye: 'Good/Consistent', history: 'Meets all key motor and communication benchmarks for 34 months.' }
       ];
 
       const obsList = [
