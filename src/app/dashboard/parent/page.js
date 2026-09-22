@@ -1346,30 +1346,6 @@ export default function ParentDashboard() {
         <header className="top-bar">
           <div className="top-bar-title">{getTabTitle()}</div>
           <div className="top-bar-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'relative' }}>
-            <button
-              onClick={handleSeed20Records}
-              disabled={seedingLoading}
-              style={{
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.45rem 0.9rem',
-                borderRadius: '8px',
-                fontWeight: 700,
-                fontSize: '0.82rem',
-                cursor: seedingLoading ? 'not-allowed' : 'pointer',
-                boxShadow: '0 2px 6px rgba(16, 185, 129, 0.3)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s ease'
-              }}
-              title="Automatically populate database with 20 realistic child records and AI clinical reviews"
-              id="btn-parent-seed-20-records"
-            >
-              {seedingLoading ? '⏳ Seeding 20 Records...' : '⚡ Seed 20 AI Child Records'}
-            </button>
-
             <NotificationCenter
               profileId={profile.id}
               onViewAll={() => { setActiveTab('notifications'); setNotifPage(1); }}
