@@ -302,13 +302,13 @@ BEGIN
     INSERT INTO public.video_annotations (
       id,
       case_id,
+      psychologist_id,
       timestamp_seconds,
-      annotation_text,
-      category,
+      observation_note,
       created_at
     ) VALUES 
-      (gen_random_uuid(), v_case_id, 12, 'AI Marker 00:12 - Joint attention prompt response evaluated', 'Social Interaction', now() - ((21 - i) || ' days')::interval),
-      (gen_random_uuid(), v_case_id, 45, 'AI Marker 00:45 - Motor movement & eye gaze vector recorded', 'Eye Contact', now() - ((21 - i) || ' days')::interval);
+      (gen_random_uuid(), v_case_id, v_psychologist_id, 12, '[Social Interaction] AI Marker 00:12 - Joint attention prompt response evaluated', now() - ((21 - i) || ' days')::interval),
+      (gen_random_uuid(), v_case_id, v_psychologist_id, 45, '[Eye Contact] AI Marker 00:45 - Motor movement & eye gaze vector recorded', now() - ((21 - i) || ' days')::interval);
 
     -- E. Insert Notification
     IF v_parent_id IS NOT NULL THEN
@@ -317,7 +317,7 @@ BEGIN
         user_id,
         title,
         message,
-        is_read,
+        read,
         created_at
       ) VALUES (
         gen_random_uuid(),
